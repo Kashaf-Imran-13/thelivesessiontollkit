@@ -1,0 +1,196 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum SessionStatus {
+  waiting
+  active
+  paused
+  completed
+}
+
+enum ParticipantRole {
+  host
+  co_host
+  attendee
+}
+
+model Session {
+  id              Int               @id @default(autoincrement())
+  sessionCode     String            @unique @map("session_code") @db.VarChar(12)
+  title           String            @db.VarChar(150)
+  description     String?           @db.Text
+  topic           String            @default("General") @db.VarChar(100)
+  hostName        String            @map("host_name") @db.VarChar(100)
+  hostEmail       String?           @map("host_email") @db.VarChar(150)
+  status          SessionStatus     @default(waiting)
+  maxParticipants Int               @default(20) @map("max_participants")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  startedAt       DateTime?         @map("started_at")
+  endedAt         DateTime?         @map("ended_at")
+
+  // Relations
+  participants    Participant[]
+  activities      SessionActivity[]
+  polls           Poll[]
+  questions       QAQuestion[]
+  insights        SessionInsight?
+  attendanceLogs  AttendanceRecord[]
+
+  @@map("sessions")
+}
+
+model Participant {
+  id          Int              @id @default(autoincrement())
+  sessionId   Int              @map("session_id")
+  name        String           @db.VarChar(100)
+  email       String           @db.VarChar(150)
+  role        ParticipantRole  @default(attendee)
+  isActive    Boolean          @default(true) @map("is_active")
+  joinedAt    DateTime         @default(now()) @map("joined_at")
+  leftAt      DateTime?        @map("left_at")
+
+  session     Session          @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  responses   PollResponse[]
+  questions   QAQuestion[]
+  upvotes     QAUpvote[]
+
+  @@map("participants")
+}
+
+model AttendanceRecord {
+  id             Int       @id @default(autoincrement())
+  sessionId      Int       @map("session_id")
+  participantId  Int       @map("participant_id")
+  name           String    @db.VarChar(100)
+  email          String    @db.VarChar(150)
+  role           String    @default("attendee")
+  joinTime       DateTime  @default(now()) @map("join_time")
+  leaveTime      DateTime? @map("leave_time")
+  durationSeconds Int      @default(0) @map("duration_seconds")
+  status         String    @default("connected") // connected | disconnected
+
+  session        Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("attendance_records")
+}
+
+model SessionActivity {
+  id              Int       @id @default(autoincrement())
+  sessionId       Int       @map("session_id")
+  participantName String    @default("System") @map("participant_name") @db.VarChar(100)
+  activityType    String    @map("activity_type") @db.VarChar(50)
+  message         String    @db.VarChar(255)
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  session         Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("session_activities")
+}
+
+// ---------------------------------------------------------
+// Polls & Quizzes
+// ---------------------------------------------------------
+model Poll {
+  id          Int            @id @default(autoincrement())
+  sessionId   Int            @map("session_id")
+  question    String         @db.Text
+  pollType    String         @default("poll") @map("poll_type") // poll | quiz
+  isActive    Boolean        @default(true) @map("is_active")
+  isClosed    Boolean        @default(false) @map("is_closed")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  closedAt    DateTime?      @map("closed_at")
+
+  session     Session        @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  options     PollOption[]
+  responses   PollResponse[]
+
+  @@map("polls")
+}
+
+model PollOption {
+  id         Int            @id @default(autoincrement())
+  pollId     Int            @map("poll_id")
+  optionText String         @map("option_text") @db.VarChar(255)
+  isCorrect  Boolean        @default(false) @map("is_correct")
+  optionOrder Int           @default(0) @map("option_order")
+
+  poll       Poll           @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  responses  PollResponse[]
+
+  @@map("poll_options")
+}
+
+model PollResponse {
+  id            Int          @id @default(autoincrement())
+  pollId        Int          @map("poll_id")
+  optionId      Int          @map("option_id")
+  participantId Int?         @map("participant_id")
+  voterName     String       @default("Anonymous") @map("voter_name") @db.VarChar(100)
+  voterEmail    String?      @map("voter_email") @db.VarChar(150)
+  createdAt     DateTime     @default(now()) @map("created_at")
+
+  poll          Poll         @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  option        PollOption   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  participant   Participant? @relation(fields: [participantId], references: [id], onDelete: SetNull)
+
+  @@map("poll_responses")
+}
+
+// ---------------------------------------------------------
+// Feature 6: Q&A Module
+// ---------------------------------------------------------
+model QAQuestion {
+  id            Int          @id @default(autoincrement())
+  sessionId     Int          @map("session_id")
+  participantId Int?         @map("participant_id")
+  authorName    String       @map("author_name") @db.VarChar(100)
+  questionText  String       @map("question_text") @db.Text
+  upvotesCount  Int          @default(0) @map("upvotes_count")
+  isAnswered    Boolean      @default(false) @map("is_answered")
+  isPinned      Boolean      @default(false) @map("is_pinned")
+  createdAt     DateTime     @default(now()) @map("created_at")
+
+  session       Session      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  participant   Participant? @relation(fields: [participantId], references: [id], onDelete: SetNull)
+  upvotes       QAUpvote[]
+
+  @@map("qa_questions")
+}
+
+model QAUpvote {
+  id            Int         @id @default(autoincrement())
+  questionId    Int         @map("question_id")
+  participantId Int?        @map("participant_id")
+  voterKey      String      @map("voter_key") @db.VarChar(100) // session_user unique key
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  question      QAQuestion  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  participant   Participant? @relation(fields: [participantId], references: [id], onDelete: SetNull)
+
+  @@unique([questionId, voterKey])
+  @@map("qa_upvotes")
+}
+
+// ---------------------------------------------------------
+// Feature 9: AI Session Insights
+// ---------------------------------------------------------
+model SessionInsight {
+  id                Int      @id @default(autoincrement())
+  sessionId         Int      @unique @map("session_id")
+  summary           String   @db.Text
+  engagementScore   Int      @map("engagement_score") // 0 - 100
+  accuracyRate      Int      @map("accuracy_rate") // 0 - 100
+  keyThemes         String   @map("key_themes") @db.Text // JSON array string
+  actionableInsights String  @map("actionable_insights") @db.Text // JSON array string
+  generatedAt       DateTime @default(now()) @map("generated_at")
+
+  session           Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("session_insights")
+}
