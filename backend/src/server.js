@@ -1049,13 +1049,14 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
-// -------------------------------------------------------------
-// Start Server on 0.0.0.0
-// -------------------------------------------------------------
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`====================================================`);
-  console.log(`🚀 LiveLogic Interactive Classroom is running!`);
-  console.log(`📡 Local Machine: http://localhost:${PORT}`);
-  console.log(`📱 Mobile/Wi-Fi Access: http://${LOCAL_IP}:${PORT}`);
-  console.log(`====================================================`);
-});
+module.exports = app;
+
+if (require.main === module) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`====================================================`);
+    console.log(`🚀 LiveLogic Interactive Classroom is running!`);
+    console.log(`📡 Local Machine: http://localhost:${PORT}`);
+    console.log(`📱 Mobile/Wi-Fi Access: http://${LOCAL_IP}:${PORT}`);
+    console.log(`====================================================`);
+  });
+}
