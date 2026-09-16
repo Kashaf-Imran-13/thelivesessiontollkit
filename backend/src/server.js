@@ -3,6 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
+const sessionRoutes = require('./routes/sessionRoutes');
 
 const app = express();
 
@@ -1029,6 +1030,8 @@ app.post('/api/session/quiz/close', (req, res) => {
 // -------------------------------------------------------------
 // Static Frontend Hosting & Fallback Routing
 // -------------------------------------------------------------
+app.use('/api', sessionRoutes);
+
 app.use('/api', (req, res) => {
   res.status(404).json({ success: false, error: `API route not found: ${req.method} ${req.originalUrl}` });
 });
