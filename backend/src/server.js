@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const os = require('os');
+const fs = require('fs');
 
 const app = express();
 
@@ -27,9 +28,32 @@ const LOCAL_IP = getLocalIpAddress();
 const PORT = process.env.PORT || 5000;
 
 // -------------------------------------------------------------
-// In-Memory Database
+// Durable session store. The file keeps teacher sessions resumable after a
+// browser or server restart without requiring a database setup.
 // -------------------------------------------------------------
-const sessions = {};
+const sessionStorePath = path.resolve(__dirname, '../data/sessions.json');
+
+function loadSessions() {
+  try {
+    if (fs.existsSync(sessionStorePath)) {
+      return JSON.parse(fs.readFileSync(sessionStorePath, 'utf8'));
+    }
+  } catch (error) {
+    console.warn(`[Storage] Could not load saved sessions: ${error.message}`);
+  }
+  return {};
+}
+
+function saveSessions() {
+  try {
+    fs.mkdirSync(path.dirname(sessionStorePath), { recursive: true });
+    fs.writeFileSync(sessionStorePath, JSON.stringify(sessions, null, 2));
+  } catch (error) {
+    console.error(`[Storage] Could not save sessions: ${error.message}`);
+  }
+}
+
+const sessions = loadSessions();
 
 function generateCode() {
   let code;
@@ -261,6 +285,27 @@ function generateQuizByTopic(topicInput = 'General Knowledge', requestedCount = 
   }));
 }
 
+function buildQuizAnswerKey(quiz) {
+  return (quiz.questions || []).map((question) => ({
+    questionId: question.id,
+    question: question.question,
+    correctAnswer: question.options?.[question.correctIndex] || '',
+    explanation: question.explanation || '',
+  }));
+}
+
+function getStudentSessionView(session, participantId) {
+  const studentSession = JSON.parse(JSON.stringify(session));
+  if (studentSession.activeQuiz) {
+    const studentQuiz = studentSession.activeQuiz;
+    studentQuiz.questions = (studentQuiz.questions || []).map(({ correctIndex, ...question }) => question);
+    studentQuiz.submissions = participantId && studentQuiz.submissions?.[participantId]
+      ? { [participantId]: studentQuiz.submissions[participantId] }
+      : {};
+  }
+  return studentSession;
+}
+
 // -------------------------------------------------------------
 // Network Info Endpoint
 // -------------------------------------------------------------
@@ -297,6 +342,192 @@ app.post('/api/teacher/auth', (req, res) => {
   return res.status(401).json({ success: false, error: 'Incorrect teacher passcode for this class session.' });
 });
 
+// Teacher: list saved sessions after authenticating one of their classes
+app.post('/api/teacher/history', (req, res) => {
+  const { code, passcode } = req.body;
+  const session = sessions[(code || '').trim()];
+
+  if (!session || session.teacherPasscode !== (passcode || '').trim()) {
+    return res.status(401).json({ success: false, error: 'Teacher authentication failed.' });
+  }
+
+  const history = Object.values(sessions)
+    .filter((item) => item.hostName === session.hostName)
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .map((item) => {
+      const storedParticipants = Array.isArray(item.participantHistory) && item.participantHistory.length > 0
+        ? item.participantHistory
+        : [
+            ...(item.activeParticipants || []).map((participant) => ({ ...participant, participationStatus: 'active' })),
+            ...(item.waitingRoom || []).map((participant) => ({ ...participant, participationStatus: 'waiting' })),
+          ];
+      const quizzes = [...(item.quizzesHistory || []), ...(item.activeQuiz ? [item.activeQuiz] : [])];
+      const storedSubmissions = Array.isArray(item.quizSubmissions) ? item.quizSubmissions : [];
+      const nestedSubmissions = quizzes.flatMap((quiz) => Object.values(quiz.submissions || {}));
+      const submissions = [...storedSubmissions];
+      nestedSubmissions.forEach((submission) => {
+        if (!submissions.some((itemSubmission) => itemSubmission.quizId === submission.quizId && itemSubmission.participantId === submission.participantId)) {
+          submissions.push(submission);
+        }
+      });
+
+      return {
+      code: item.code,
+      sessionId: item.code,
+      hostName: item.hostName,
+      createdAt: item.createdAt,
+      participants: storedParticipants,
+      activeParticipants: (item.activeParticipants || []).length,
+      waitingParticipants: (item.waitingRoom || []).length,
+      polls: (item.pollsHistory || []).length + (item.activePoll ? 1 : 0),
+      quizzes: (item.quizzesHistory || []).length + (item.activeQuiz ? 1 : 0),
+      submissions: submissions.length,
+      questionsAsked: [
+        ...(item.pollsHistory || []).map((poll) => ({
+          type: 'poll', id: poll.id, question: poll.question, askedAt: poll.createdAt,
+        })),
+        ...(item.activePoll ? [{
+          type: 'poll', id: item.activePoll.id, question: item.activePoll.question, askedAt: item.activePoll.createdAt,
+        }] : []),
+        ...(item.quizzesHistory || []).flatMap((quiz) => (quiz.questions || []).map((question) => ({
+          type: quiz.isAI ? 'ai-quiz' : 'quiz',
+          id: `${quiz.id}:${question.id}`,
+          quizId: quiz.id,
+          quizTitle: quiz.title,
+          question: question.question,
+          options: question.options,
+          correctIndex: question.correctIndex,
+          askedAt: quiz.createdAt,
+        }))),
+        ...(item.activeQuiz ? (item.activeQuiz.questions || []).map((question) => ({
+          type: item.activeQuiz.isAI ? 'ai-quiz' : 'quiz',
+          id: `${item.activeQuiz.id}:${question.id}`,
+          quizId: item.activeQuiz.id,
+          quizTitle: item.activeQuiz.title,
+          question: question.question,
+          options: question.options,
+          correctIndex: question.correctIndex,
+          askedAt: item.activeQuiz.createdAt,
+        })) : []),
+      ],
+      quizzesDetails: quizzes,
+      quizSubmissions: submissions,
+      feedback: item.feedback || [],
+      attendance: item.attendance || storedParticipants.map((participant) => ({
+        participantId: participant.id,
+        studentName: participant.name,
+        sessionId: item.code,
+        joinTime: participant.joinedAt || participant.requestedAt,
+        status: participant.participationStatus === 'active' ? 'Present' : 'Waiting',
+      })),
+      doubts: item.doubts || [],
+      isActive: Boolean(item.activePoll || item.activeQuiz || (item.activeParticipants || []).length),
+      };
+    });
+
+  return res.status(200).json({ success: true, history });
+});
+
+// Student: leave named or anonymous feedback for the teacher
+const submitFeedback = (req, res, next) => {
+  try {
+    const { code, participantId, studentName, message, anonymous = false } = req.body;
+    const session = sessions[(code || '').trim()];
+
+    if (!session) {
+      return res.status(404).json({ success: false, error: 'Class session not found.' });
+    }
+    if (!message || !message.trim()) {
+      return res.status(400).json({ success: false, error: 'Feedback message is required.' });
+    }
+
+    const participant = [
+      ...(session.activeParticipants || []),
+      ...(session.waitingRoom || []),
+    ].find((item) => item.id === participantId);
+    if (!participant) {
+      return res.status(403).json({ success: false, error: 'Only class participants can leave feedback.' });
+    }
+
+    if (!Array.isArray(session.feedback)) session.feedback = [];
+    const feedback = {
+      id: generateId('feedback'),
+      participantId,
+      studentName: anonymous ? 'Anonymous student' : (studentName || participant.name),
+      anonymous: Boolean(anonymous),
+      message: message.trim(),
+      createdAt: Date.now(),
+    };
+    session.feedback.unshift(feedback);
+    saveSessions();
+
+    return res.status(201).json({ success: true, feedback });
+  } catch (error) {
+    next(error);
+  }
+};
+
+app.post(['/api/session/feedback', '/api/feedback', '/api/reviews'], submitFeedback);
+
+const resolveParticipant = (session, participantId) => [
+  ...(session.activeParticipants || []),
+  ...(session.waitingRoom || []),
+].find((participant) => participant.id === participantId);
+
+app.post('/api/session/doubt', (req, res) => {
+  const { code, participantId, studentName, message, type = 'doubt' } = req.body;
+  const session = sessions[(code || '').trim()];
+  const participant = session && resolveParticipant(session, participantId);
+
+  if (!session) return res.status(404).json({ success: false, error: 'Class session not found.' });
+  if (!participant) return res.status(403).json({ success: false, error: 'Only class participants can ask a doubt.' });
+  if (!message || !message.trim()) return res.status(400).json({ success: false, error: 'Doubt message is required.' });
+
+  if (!Array.isArray(session.doubts)) session.doubts = [];
+  const doubt = {
+    id: generateId('doubt'),
+    sessionId: session.code,
+    participantId,
+    studentName: studentName || participant.name,
+    message: message.trim(),
+    type: type === 'hand' ? 'hand' : 'doubt',
+    status: 'open',
+    createdAt: Date.now(),
+  };
+  session.doubts.unshift(doubt);
+  saveSessions();
+  return res.status(201).json({ success: true, doubt });
+});
+
+app.patch('/api/session/doubt/:doubtId', (req, res) => {
+  const { code, status = 'resolved' } = req.body;
+  const session = sessions[(code || '').trim()];
+  const doubt = session?.doubts?.find((item) => item.id === req.params.doubtId);
+  if (!session || !doubt) return res.status(404).json({ success: false, error: 'Doubt not found.' });
+  doubt.status = status === 'open' ? 'open' : 'resolved';
+  doubt.resolvedAt = doubt.status === 'resolved' ? Date.now() : null;
+  saveSessions();
+  return res.json({ success: true, doubt });
+});
+
+app.get('/api/teacher/history/:code/report.csv', (req, res) => {
+  const session = sessions[req.params.code];
+  if (!session || session.teacherPasscode !== (req.query.passcode || '').trim()) {
+    return res.status(401).json({ success: false, error: 'Teacher authentication failed.' });
+  }
+
+  const escapeCsv = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+  const rows = [['Section', 'Student', 'ID', 'Timestamp', 'Status', 'Details']];
+  (session.attendance || []).forEach((record) => rows.push(['Attendance', record.studentName, record.participantId, new Date(record.joinTime).toISOString(), record.status, '']));
+  (session.quizSubmissions || []).forEach((submission) => rows.push(['Quiz', submission.studentName, submission.participantId, new Date(submission.submittedAt).toISOString(), `${submission.score}/${submission.total}`, `${submission.quizTitle} (${submission.percentage}%)`]));
+  (session.feedback || []).forEach((feedback) => rows.push(['Feedback', feedback.studentName, feedback.participantId, new Date(feedback.createdAt).toISOString(), '', feedback.message]));
+  (session.doubts || []).forEach((doubt) => rows.push(['Doubt', doubt.studentName, doubt.participantId, new Date(doubt.createdAt).toISOString(), doubt.status, doubt.message]));
+
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="session_${session.code}_report.csv"`);
+  return res.send(rows.map((row) => row.map(escapeCsv).join(',')).join('\n'));
+});
+
 // -------------------------------------------------------------
 // Session Management Endpoints
 // -------------------------------------------------------------
@@ -322,14 +553,19 @@ app.post('/api/session/create', (req, res) => {
     joinUrl: `http://${currentIp}:${PORT}/?code=${code}`,
     waitingRoom: [],
     activeParticipants: [],
+    participantHistory: [],
     activePoll: null,
     pollsHistory: [],
     activeQuiz: null,
     quizzesHistory: [],
     quizSubmissions: [],
+    feedback: [],
+    attendance: [],
+    doubts: [],
   };
 
   sessions[code] = session;
+  saveSessions();
   return res.status(201).json({ session, localIp: currentIp, teacherPasscode });
 });
 
@@ -355,7 +591,7 @@ app.post('/api/session/join', (req, res) => {
   if (existingActive) {
     return res.status(200).json({
       participantId: existingActive.id,
-      session,
+      session: getStudentSessionView(session, existingActive.id),
       isAlreadyActive: true,
     });
   }
@@ -364,17 +600,33 @@ app.post('/api/session/join', (req, res) => {
     (p) => p.name.toLowerCase() === trimmedName.toLowerCase()
   );
   if (existingWaiting) {
-    return res.status(200).json({ participantId: existingWaiting.id, session });
+    return res.status(200).json({ participantId: existingWaiting.id, session: getStudentSessionView(session, existingWaiting.id) });
   }
 
   const participantId = generateId('student');
-  session.waitingRoom.push({
+  if (!Array.isArray(session.participantHistory)) session.participantHistory = [];
+  if (!Array.isArray(session.attendance)) session.attendance = [];
+  const joinTime = Date.now();
+  const participant = {
     id: participantId,
+    sessionId: cleanCode,
     name: trimmedName,
-    requestedAt: Date.now(),
+    requestedAt: joinTime,
+    participationStatus: 'waiting',
+  };
+  session.waitingRoom.push(participant);
+  session.participantHistory.push({ ...participant });
+  session.attendance.push({
+    participantId,
+    studentName: trimmedName,
+    sessionId: cleanCode,
+    joinTime,
+    status: joinTime - session.createdAt > 5 * 60 * 1000 ? 'Late' : 'Present',
   });
 
-  return res.status(200).json({ participantId, session });
+  saveSessions();
+
+  return res.status(200).json({ participantId, session: getStudentSessionView(session, participantId) });
 });
 
 // 3. Teacher: Approve student entry
@@ -397,6 +649,15 @@ app.post('/api/session/approve', (req, res) => {
     ...participant,
     joinedAt: Date.now(),
   });
+  const historyParticipant = session.participantHistory?.find((item) => item.id === participant.id);
+  if (historyParticipant) {
+    historyParticipant.participationStatus = 'active';
+    historyParticipant.joinedAt = Date.now();
+  }
+  const attendanceRecord = session.attendance?.find((record) => record.participantId === participant.id);
+  if (attendanceRecord) attendanceRecord.status = attendanceRecord.status === 'Late' ? 'Late' : 'Present';
+
+  saveSessions();
 
   return res.status(200).json({ session });
 });
@@ -412,6 +673,9 @@ app.post('/api/session/reject', (req, res) => {
   }
 
   session.waitingRoom = session.waitingRoom.filter((p) => p.id !== participantId);
+  const historyParticipant = session.participantHistory?.find((item) => item.id === participantId);
+  if (historyParticipant) historyParticipant.participationStatus = 'rejected';
+  saveSessions();
   return res.status(200).json({ session });
 });
 
@@ -426,6 +690,11 @@ app.post('/api/session/kick', (req, res) => {
   }
 
   session.activeParticipants = session.activeParticipants.filter((p) => p.id !== participantId);
+  const historyParticipant = session.participantHistory?.find((item) => item.id === participantId);
+  if (historyParticipant) historyParticipant.participationStatus = 'kicked';
+  const attendanceRecord = session.attendance?.find((record) => record.participantId === participantId);
+  if (attendanceRecord) attendanceRecord.status = 'Left';
+  saveSessions();
   return res.status(200).json({ session });
 });
 
@@ -442,7 +711,11 @@ app.get('/api/session/:code', (req, res) => {
   session.localIp = currentIp;
   session.joinUrl = `http://${currentIp}:${PORT}/?code=${session.code}`;
 
-  return res.status(200).json({ session, localIp: currentIp });
+  const isStudentRequest = req.query.role === 'student';
+  return res.status(200).json({
+    session: isStudentRequest ? getStudentSessionView(session, req.query.participantId) : session,
+    localIp: currentIp,
+  });
 });
 
 // -------------------------------------------------------------
@@ -475,12 +748,15 @@ app.post('/api/session/poll/create', (req, res) => {
 
   session.activePoll = {
     id: generateId('poll'),
+    sessionId: cleanCode,
     question: question.trim(),
     options: validOptions,
     isActive: true,
     createdAt: Date.now(),
     votes: {},
   };
+
+  saveSessions();
 
   return res.status(201).json({ session });
 });
@@ -506,7 +782,9 @@ app.post('/api/session/poll/vote', (req, res) => {
     votedAt: Date.now(),
   };
 
-  return res.status(200).json({ session, message: 'Vote recorded!' });
+  saveSessions();
+
+  return res.status(200).json({ session: getStudentSessionView(session, participantId), message: 'Vote recorded!' });
 });
 
 app.post('/api/session/poll/close', (req, res) => {
@@ -522,6 +800,8 @@ app.post('/api/session/poll/close', (req, res) => {
   session.pollsHistory.unshift({ ...session.activePoll, closedAt: Date.now() });
   session.activePoll = null;
 
+  saveSessions();
+
   return res.status(200).json({ session });
 });
 
@@ -529,7 +809,7 @@ app.post('/api/session/poll/close', (req, res) => {
 // Custom & AI Quiz Builder Endpoints (Direct Session Persistence)
 // -------------------------------------------------------------
 app.post('/api/session/quiz/create', (req, res) => {
-  const { code, title, topic, questions } = req.body;
+  const { code, title, topic, questions, durationMinutes = 10 } = req.body;
   const cleanCode = (code || '').trim();
   const session = sessions[cleanCode];
 
@@ -565,21 +845,26 @@ app.post('/api/session/quiz/create', (req, res) => {
   // Directly assign activeQuiz to the session
   const newQuiz = {
     id: generateId('quiz'),
+    sessionId: cleanCode,
     title: title.trim(),
     topic: topic ? topic.trim() : 'Custom Topic',
     isActive: true,
     createdAt: Date.now(),
+    durationSeconds: Math.max(1, Math.min(180, Number(durationMinutes) || 10)) * 60,
+    expiresAt: Date.now() + Math.max(1, Math.min(180, Number(durationMinutes) || 10)) * 60 * 1000,
     questions: formattedQuestions,
     submissions: {},
+    showAnswerKey: Boolean(req.body.showAnswerKey),
   };
 
   session.activeQuiz = newQuiz;
+  saveSessions();
 
   return res.status(201).json({ session });
 });
 
 app.post('/api/session/quiz/generate-ai', (req, res) => {
-  const { code, topic, count = 5 } = req.body;
+  const { code, topic, count = 5, durationMinutes = 10 } = req.body;
   const cleanCode = (code || '').trim();
   const session = sessions[cleanCode];
 
@@ -598,16 +883,21 @@ app.post('/api/session/quiz/generate-ai', (req, res) => {
   // Directly assign activeQuiz to the session
   const newQuiz = {
     id: generateId('ai_quiz'),
+    sessionId: cleanCode,
     title: `${topicName} Quiz`,
     topic: topicName,
     isAI: true,
     isActive: true,
     createdAt: Date.now(),
+    durationSeconds: Math.max(1, Math.min(180, Number(durationMinutes) || 10)) * 60,
+    expiresAt: Date.now() + Math.max(1, Math.min(180, Number(durationMinutes) || 10)) * 60 * 1000,
     questions: generatedQuestions,
     submissions: {},
+    showAnswerKey: Boolean(req.body.showAnswerKey),
   };
 
   session.activeQuiz = newQuiz;
+  saveSessions();
 
   return res.status(201).json({ session });
 });
@@ -622,6 +912,12 @@ app.post('/api/session/quiz/submit', (req, res) => {
     return res.status(404).json({ error: 'Class session not found. Please verify the code.' });
   }
 
+  // Find target quiz: prefer active quiz, fall back to history.
+  let targetQuiz = session.activeQuiz;
+  if (!targetQuiz && quizId) {
+    targetQuiz = (session.quizzesHistory || []).find((q) => q.id === quizId);
+  }
+
   // ── Idempotency: check if this student already submitted this quiz ──
   // This handles the race condition where a student clicks submit just as
   // the teacher closes the quiz. We return their prior result gracefully.
@@ -632,22 +928,17 @@ app.post('/api/session/quiz/submit', (req, res) => {
     if (priorSubmission) {
       return res.status(200).json({
         success: true,
-        session,
+        session: getStudentSessionView(session, participantId),
         result: {
           quizId: priorSubmission.quizId,
           score: priorSubmission.score,
           total: priorSubmission.total,
           percentage: priorSubmission.percentage,
+          ...(targetQuiz?.showAnswerKey ? { answerKey: buildQuizAnswerKey(targetQuiz) } : {}),
         },
         message: 'Quiz already submitted — returning your recorded result.',
       });
     }
-  }
-
-  // ── Find target quiz: prefer active quiz, fall back to history ──
-  let targetQuiz = session.activeQuiz;
-  if (!targetQuiz && quizId) {
-    targetQuiz = session.quizzesHistory.find((q) => q.id === quizId);
   }
 
   if (!targetQuiz) {
@@ -657,6 +948,13 @@ app.post('/api/session/quiz/submit', (req, res) => {
       error: hadQuiz
         ? 'The quiz has already ended. Your answers were not recorded.'
         : 'No active quiz found for this session.',
+    });
+  }
+
+  if (targetQuiz.expiresAt && Date.now() >= targetQuiz.expiresAt) {
+    return res.status(410).json({
+      error: 'This quiz time limit has expired. Your answers were not recorded.',
+      expired: true,
     });
   }
 
@@ -674,6 +972,7 @@ app.post('/api/session/quiz/submit', (req, res) => {
 
   const submissionRecord = {
     quizId: targetQuiz.id,
+    sessionId: cleanCode,
     quizTitle: targetQuiz.title,
     participantId: participantId || generateId('student'),
     studentName: studentName || 'Student',
@@ -695,15 +994,17 @@ app.post('/api/session/quiz/submit', (req, res) => {
     session.quizSubmissions = [];
   }
   session.quizSubmissions.unshift(submissionRecord);
+  saveSessions();
 
   return res.status(200).json({
     success: true,
-    session,
+    session: getStudentSessionView(session, participantId),
     result: {
       quizId: targetQuiz.id,
       score: correctCount,
       total,
       percentage,
+      ...(targetQuiz.showAnswerKey ? { answerKey: buildQuizAnswerKey(targetQuiz) } : {}),
     },
   });
 });
@@ -720,6 +1021,7 @@ app.post('/api/session/quiz/close', (req, res) => {
   session.activeQuiz.isActive = false;
   session.quizzesHistory.unshift({ ...session.activeQuiz, closedAt: Date.now() });
   session.activeQuiz = null;
+  saveSessions();
 
   return res.status(200).json({ session });
 });
@@ -727,6 +1029,19 @@ app.post('/api/session/quiz/close', (req, res) => {
 // -------------------------------------------------------------
 // Static Frontend Hosting & Fallback Routing
 // -------------------------------------------------------------
+app.use('/api', (req, res) => {
+  res.status(404).json({ success: false, error: `API route not found: ${req.method} ${req.originalUrl}` });
+});
+
+app.use((error, req, res, next) => {
+  console.error(`[Error] ${req.method} ${req.originalUrl}:`, error);
+  if (res.headersSent) return next(error);
+  res.status(error.statusCode || 500).json({
+    success: false,
+    error: error.message || 'Internal Server Error',
+  });
+});
+
 const distPath = path.resolve(__dirname, '../../frontend/dist');
 app.use(express.static(distPath));
 

@@ -5,6 +5,21 @@ const API_BASE = (typeof window !== 'undefined' && window.location.origin
   ? window.location.origin
   : 'http://localhost:5000') + '/api';
 
+async function readApiResponse(response) {
+  const body = await response.text();
+  let data;
+  try {
+    data = body ? JSON.parse(body) : {};
+  } catch {
+    throw new Error(`API returned a non-JSON response (${response.status}). Check that the backend is running at ${API_BASE}.`);
+  }
+
+  if (!response.ok) {
+    throw new Error(data.error?.message || data.error || `Request failed (${response.status}).`);
+  }
+  return data;
+}
+
 const POLL_INTERVAL_MS = 1500;
 
 // -------------------------------------------------------------
@@ -33,7 +48,7 @@ const getTheme = (isDark) => ({
 // -------------------------------------------------------------
 // Top Navigation Header with Theme Toggle
 // -------------------------------------------------------------
-function TopNavbar({ isDark, onToggleTheme, title = 'LiveLogic Classroom', onLeave, userLabel, isStudentLocked }) {
+function TopNavbar({ isDark, onToggleTheme, title = 'LiveLogic Classroom', onBack, onLeave, userLabel, isStudentLocked }) {
   const theme = getTheme(isDark);
 
   return (
@@ -79,9 +94,19 @@ function TopNavbar({ isDark, onToggleTheme, title = 'LiveLogic Classroom', onLea
             </div>
           )}
         </div>
+
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {onBack && (
+          <button
+            onClick={onBack}
+            title="Go back"
+            style={{ background: 'transparent', border: `1px solid ${theme.border}`, color: theme.text, padding: '8px 14px', borderRadius: '10px', cursor: 'pointer', fontSize: '13px', fontWeight: 700 }}
+          >
+            ← Back
+          </button>
+        )}
         <button
           onClick={onToggleTheme}
           title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
@@ -130,8 +155,8 @@ function TopNavbar({ isDark, onToggleTheme, title = 'LiveLogic Classroom', onLea
 // -------------------------------------------------------------
 function TeacherAuthModal({ isOpen, onClose, onSuccess, isDark }) {
   const theme = getTheme(isDark);
-  const [code, setCode] = useState('');
-  const [passcode, setPasscode] = useState('');
+  const [code, setCode] = useState(() => localStorage.getItem('livelogic_teacher_code') || '');
+  const [passcode, setPasscode] = useState(() => localStorage.getItem('livelogic_teacher_passcode') || '');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -156,6 +181,8 @@ function TeacherAuthModal({ isOpen, onClose, onSuccess, isDark }) {
       const data = await res.json();
 
       if (res.ok && data.success) {
+        localStorage.setItem('livelogic_teacher_code', code.trim());
+        localStorage.setItem('livelogic_teacher_passcode', passcode.trim());
         onSuccess(data.session);
       } else {
         setError(data.error || 'Incorrect passcode for this class.');
@@ -474,15 +501,18 @@ function RoleSelectScreen({ onStartNewClass, onResumeTeacher, onSelectStudent, i
 // -------------------------------------------------------------
 // Teacher Dashboard Component (Multi-Tab Control Center)
 // -------------------------------------------------------------
-function TeacherControlCenter({ onLeave, onResumeTeacher, isDark, onToggleTheme, initialSession }) {
+function TeacherControlCenter({ onLeave, onBack, onResumeTeacher, isDark, onToggleTheme, initialSession }) {
   const theme = getTheme(isDark);
 
   const [teacherName, setTeacherName] = useState('');
   const [customPasscode, setCustomPasscode] = useState('');
   const [session, setSession] = useState(initialSession || null);
-  const [activeTab, setActiveTab] = useState('overview'); // overview | waiting | polls | quizzes
+  const [activeTab, setActiveTab] = useState('overview'); // overview | waiting | polls | quizzes | attendance | questions
   const [error, setError] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [sessionHistory, setSessionHistory] = useState([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [historyError, setHistoryError] = useState('');
 
   // Poll Form State (Auto-cleared clean inputs)
   const [pollQuestion, setPollQuestion] = useState('');
@@ -493,6 +523,8 @@ function TeacherControlCenter({ onLeave, onResumeTeacher, isDark, onToggleTheme,
   const [quizMode, setQuizMode] = useState('ai'); // ai | manual
   const [aiTopic, setAiTopic] = useState('');
   const [aiCount, setAiCount] = useState(5);
+  const [quizDurationMinutes, setQuizDurationMinutes] = useState(10);
+  const [showAnswerKey, setShowAnswerKey] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
 
   // Manual Quiz State
@@ -508,6 +540,17 @@ function TeacherControlCenter({ onLeave, onResumeTeacher, isDark, onToggleTheme,
   ]);
 
   const pollIntervalRef = useRef(null);
+  const historyVersion = [
+    session?.activeParticipants?.length || 0,
+    session?.waitingRoom?.length || 0,
+    session?.activePoll?.id || '',
+    session?.activeQuiz?.id || '',
+    session?.quizSubmissions?.length || 0,
+    session?.activeQuiz?.submissions ? Object.keys(session.activeQuiz.submissions).length : 0,
+    session?.feedback?.length || 0,
+    session?.attendance?.length || 0,
+    session?.doubts?.map((doubt) => `${doubt.id}:${doubt.status}`).join(',') || '',
+  ].join(':');
 
   // 1. Create Session with Custom Passcode
   const handleCreateSession = async () => {
@@ -529,6 +572,8 @@ function TeacherControlCenter({ onLeave, onResumeTeacher, isDark, onToggleTheme,
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to create session.');
+      localStorage.setItem('livelogic_teacher_code', data.session.code);
+      localStorage.setItem('livelogic_teacher_passcode', data.session.teacherPasscode);
       setSession(data.session);
     } catch (err) {
       setError(err.message || 'Server connection error.');
@@ -560,6 +605,30 @@ function TeacherControlCenter({ onLeave, onResumeTeacher, isDark, onToggleTheme,
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     };
   }, [session?.code, fetchSessionData]);
+
+  useEffect(() => {
+    if (!session?.code || !session.teacherPasscode) return;
+
+    const fetchHistory = async () => {
+      setIsLoadingHistory(true);
+      setHistoryError('');
+      try {
+        const res = await fetch(`${API_BASE}/teacher/history`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: session.code, passcode: session.teacherPasscode }),
+        });
+        const data = await readApiResponse(res);
+        if (data.success) setSessionHistory(data.history || []);
+      } catch (error) {
+        setHistoryError(error.message || 'Could not load session history.');
+      } finally {
+        setIsLoadingHistory(false);
+      }
+    };
+
+    fetchHistory();
+  }, [session?.code, session?.teacherPasscode, historyVersion]);
 
   // 3. Approve Student
   const handleApprove = async (participantId) => {
@@ -604,6 +673,30 @@ function TeacherControlCenter({ onLeave, onResumeTeacher, isDark, onToggleTheme,
     } catch {
       setError('Could not remove student.');
     }
+  };
+
+  const handleResolveDoubt = async (doubtId) => {
+    try {
+      const res = await fetch(`${API_BASE}/session/doubt/${doubtId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: session.code, status: 'resolved' }),
+      });
+      const data = await res.json();
+      if (res.ok && data.doubt) {
+        setSession((current) => ({
+          ...current,
+          doubts: (current.doubts || []).map((doubt) => doubt.id === doubtId ? data.doubt : doubt),
+        }));
+      }
+    } catch {
+      setError('Could not resolve doubt.');
+    }
+  };
+
+  const handleExportReport = () => {
+    const url = `${API_BASE}/teacher/history/${encodeURIComponent(session.code)}/report.csv?passcode=${encodeURIComponent(session.teacherPasscode)}`;
+    window.open(url, '_blank');
   };
 
   // 6. Launch Poll (Auto-resets form inputs to blank)
@@ -674,6 +767,8 @@ function TeacherControlCenter({ onLeave, onResumeTeacher, isDark, onToggleTheme,
           code: session.code,
           topic: aiTopic.trim(),
           count: aiCount,
+          durationMinutes: quizDurationMinutes,
+          showAnswerKey,
         }),
       });
       const data = await res.json();
@@ -715,6 +810,8 @@ function TeacherControlCenter({ onLeave, onResumeTeacher, isDark, onToggleTheme,
           title: manualTitle.trim(),
           topic: manualTopic.trim() || 'General',
           questions: validQuestions,
+          durationMinutes: quizDurationMinutes,
+          showAnswerKey,
         }),
       });
       const data = await res.json();
@@ -774,7 +871,7 @@ function TeacherControlCenter({ onLeave, onResumeTeacher, isDark, onToggleTheme,
   if (!session) {
     return (
       <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', flexDirection: 'column' }}>
-        <TopNavbar isDark={isDark} onToggleTheme={onToggleTheme} onLeave={onLeave} userLabel="Teacher Setup" />
+        <TopNavbar isDark={isDark} onToggleTheme={onToggleTheme} onBack={onBack} onLeave={onLeave} userLabel="Teacher Setup" />
 
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
           <div
@@ -950,6 +1047,7 @@ function TeacherControlCenter({ onLeave, onResumeTeacher, isDark, onToggleTheme,
       <TopNavbar
         isDark={isDark}
         onToggleTheme={onToggleTheme}
+        onBack={onLeave}
         onLeave={() => {
           if (window.confirm('Are you sure you want to end this session and leave?')) onLeave();
         }}
@@ -1092,6 +1190,8 @@ function TeacherControlCenter({ onLeave, onResumeTeacher, isDark, onToggleTheme,
             { id: 'waiting', label: `👥 Waiting Room (${session.waitingRoom.length})` },
             { id: 'polls', label: `📈 Live Polls ${session.activePoll ? '● Live' : ''}` },
             { id: 'quizzes', label: `✨ Quizzes ${session.activeQuiz ? `● Live (${totalQuizSubmissions})` : ''}` },
+            { id: 'attendance', label: `🧾 Attendance (${session.attendance?.length || session.activeParticipants.length})` },
+            { id: 'questions', label: `🙋 Doubts (${(session.doubts || []).filter((doubt) => doubt.status === 'open').length})` },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -1187,6 +1287,125 @@ function TeacherControlCenter({ onLeave, onResumeTeacher, isDark, onToggleTheme,
                 </div>
               )}
             </div>
+
+            <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: '20px', padding: '24px', marginTop: '20px' }}>
+              <h3 style={{ fontSize: '17px', fontWeight: 800, color: theme.text, marginBottom: '6px' }}>
+                Teacher Session History
+              </h3>
+              <p style={{ color: theme.subtext, fontSize: '13px', marginBottom: '16px' }}>
+                Saved sessions remain available for review and resume after a browser restart.
+              </p>
+              <button
+                onClick={handleExportReport}
+                style={{ padding: '9px 14px', borderRadius: '9px', border: `1px solid ${theme.border}`, background: theme.cardSecondary, color: theme.text, fontWeight: 700, cursor: 'pointer', marginBottom: '16px' }}
+              >
+                Export Report (CSV)
+              </button>
+              {isLoadingHistory ? (
+                <div style={{ color: theme.subtext, fontSize: '14px' }}>Loading saved sessions...</div>
+              ) : historyError ? (
+                <div style={{ background: theme.redBg, border: `1px solid ${theme.red}`, color: theme.red, borderRadius: '10px', padding: '12px', fontSize: '13px' }}>
+                  {historyError}
+                </div>
+              ) : sessionHistory.length === 0 ? (
+                <div style={{ color: theme.subtext, fontSize: '14px' }}>No previous sessions found.</div>
+              ) : (
+                <div style={{ display: 'grid', gap: '10px' }}>
+                  {sessionHistory.map((item) => (
+                    <details key={item.code} style={{ background: theme.cardSecondary, border: `1px solid ${theme.border}`, borderRadius: '10px', padding: '12px 14px' }}>
+                      <summary style={{ cursor: 'pointer', color: theme.text, fontWeight: 700 }}>
+                        <span style={{ color: theme.primary, fontFamily: 'monospace', letterSpacing: '1px' }}>{item.code}</span>
+                        <span style={{ color: theme.subtext, fontSize: '12px', marginLeft: '12px' }}>{new Date(item.createdAt).toLocaleString()}</span>
+                      </summary>
+                      <div style={{ color: theme.subtext, fontSize: '13px', marginTop: '14px' }}>
+                        <strong style={{ color: theme.text }}>Participants</strong>
+                        {item.participants?.length ? item.participants.map((participant) => (
+                          <div key={participant.id} style={{ padding: '6px 0' }}>
+                            {participant.name} · ID: {participant.id} · {participant.participationStatus} · joined {participant.joinedAt ? new Date(participant.joinedAt).toLocaleString() : 'pending'}
+                          </div>
+                        )) : <div style={{ padding: '6px 0' }}>No participants recorded.</div>}
+
+                        <strong style={{ color: theme.text, display: 'block', marginTop: '10px' }}>Questions Asked</strong>
+                        {item.questionsAsked?.length ? item.questionsAsked.map((question) => (
+                          <div key={question.id} style={{ padding: '8px 0', borderBottom: `1px solid ${theme.border}` }}>
+                            <div style={{ color: theme.text }}>{question.question}</div>
+                            <div style={{ fontSize: '12px' }}>{question.type} {question.quizTitle ? `· ${question.quizTitle}` : ''}</div>
+                            {question.options?.length > 0 && (
+                              <div style={{ fontSize: '12px', marginTop: '4px' }}>
+                                Options: {question.options.join(' | ')}
+                                {question.correctIndex !== undefined && (
+                                  <span style={{ color: theme.emerald, marginLeft: '8px' }}>
+                                    Correct: {question.options[question.correctIndex] || 'Not specified'}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )) : <div style={{ padding: '6px 0' }}>No questions recorded.</div>}
+
+                        <strong style={{ color: theme.text, display: 'block', marginTop: '10px' }}>Quiz Submissions</strong>
+                        {item.quizSubmissions?.length ? item.quizSubmissions.map((submission) => (
+                          <div key={`${submission.quizId}:${submission.participantId}`} style={{ padding: '6px 0' }}>
+                            {submission.studentName} · {submission.score}/{submission.total} ({submission.percentage}%) · ID: {submission.participantId}
+                          </div>
+                        )) : <div style={{ padding: '6px 0' }}>No quiz submissions.</div>}
+                      </div>
+                    </details>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: '20px', padding: '24px', marginTop: '20px' }}>
+              <h3 style={{ fontSize: '17px', fontWeight: 800, color: theme.text, margin: '0 0 12px' }}>Student Reviews & Feedback</h3>
+              {session.feedback?.length ? session.feedback.map((feedback) => (
+                <div key={feedback.id} style={{ padding: '12px 0', borderBottom: `1px solid ${theme.border}` }}>
+                  <div style={{ color: theme.text, fontWeight: 700 }}>{feedback.studentName}</div>
+                  <div style={{ color: theme.subtext, fontSize: '12px', margin: '4px 0' }}>{new Date(feedback.createdAt).toLocaleString()}</div>
+                  <div style={{ color: theme.text, fontSize: '14px' }}>{feedback.message}</div>
+                </div>
+              )) : <div style={{ color: theme.subtext, fontSize: '14px' }}>No student feedback yet.</div>}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'attendance' && (
+          <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: '20px', padding: '24px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: theme.text, margin: '0 0 6px' }}>Attendance Sheet</h3>
+            <p style={{ color: theme.subtext, fontSize: '13px', marginBottom: '18px' }}>Students are marked when they join with the session code.</p>
+            {!session.attendance?.length ? (
+              <div style={{ color: theme.subtext, padding: '20px', background: theme.cardSecondary, borderRadius: '12px' }}>No attendance recorded yet.</div>
+            ) : (
+              <div style={{ display: 'grid', gap: '8px' }}>
+                {session.attendance.map((record) => (
+                  <div key={record.participantId} style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.5fr .7fr', gap: '12px', alignItems: 'center', background: theme.cardSecondary, border: `1px solid ${theme.border}`, borderRadius: '10px', padding: '12px 14px' }}>
+                    <div><strong style={{ color: theme.text }}>{record.studentName}</strong><div style={{ color: theme.subtext, fontSize: '11px' }}>{record.participantId}</div></div>
+                    <span style={{ color: theme.subtext, fontSize: '13px' }}>{record.joinTime ? new Date(record.joinTime).toLocaleString() : 'Unknown'}</span>
+                    <strong style={{ color: record.status === 'Late' ? theme.amber : record.status === 'Left' ? theme.subtext : theme.emerald }}>{record.status}</strong>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'questions' && (
+          <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: '20px', padding: '24px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: theme.text, margin: '0 0 6px' }}>Live Doubt Queue</h3>
+            <p style={{ color: theme.subtext, fontSize: '13px', marginBottom: '18px' }}>Raise-hand signals and student questions appear here in real time.</p>
+            {!session.doubts?.length ? (
+              <div style={{ color: theme.subtext, padding: '20px', background: theme.cardSecondary, borderRadius: '12px' }}>No doubts raised yet.</div>
+            ) : (
+              <div style={{ display: 'grid', gap: '10px' }}>
+                {session.doubts.map((doubt) => (
+                  <div key={doubt.id} style={{ background: theme.cardSecondary, border: `1px solid ${doubt.status === 'open' ? theme.amber : theme.border}`, borderRadius: '12px', padding: '14px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}><strong style={{ color: theme.text }}>{doubt.type === 'hand' ? '✋ Raise Hand' : '❓ Ask Doubt'} · {doubt.studentName}</strong><span style={{ color: doubt.status === 'open' ? theme.amber : theme.subtext, fontSize: '12px', fontWeight: 700 }}>{doubt.status}</span></div>
+                    <div style={{ color: theme.text, margin: '8px 0', fontSize: '14px' }}>{doubt.message}</div>
+                    {doubt.status === 'open' && <button onClick={() => handleResolveDoubt(doubt.id)} style={{ padding: '7px 11px', borderRadius: '8px', border: 'none', background: theme.emerald, color: '#052e12', fontWeight: 700, cursor: 'pointer' }}>Mark Resolved</button>}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -1506,6 +1725,31 @@ function TeacherControlCenter({ onLeave, onResumeTeacher, isDark, onToggleTheme,
                 </div>
               </div>
 
+              <div style={{ background: theme.cardSecondary, border: `1px solid ${theme.border}`, borderRadius: '12px', padding: '12px 14px', marginBottom: '18px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: theme.subtext, marginBottom: '6px' }}>
+                  Quiz Time Limit (minutes)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="180"
+                  value={quizDurationMinutes}
+                  onChange={(e) => setQuizDurationMinutes(Math.max(1, Math.min(180, Number(e.target.value) || 1)))}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: `1px solid ${theme.border}`, background: theme.card, color: theme.text, fontSize: '14px', boxSizing: 'border-box' }}
+                />
+                <div style={{ fontSize: '12px', color: theme.subtext, marginTop: '6px' }}>
+                  Students can submit only before this timer expires.
+                </div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: theme.text, fontSize: '13px', fontWeight: 700, marginTop: '12px' }}>
+                  <input
+                    type="checkbox"
+                    checked={showAnswerKey}
+                    onChange={(event) => setShowAnswerKey(event.target.checked)}
+                  />
+                  Allow students to view answer key after submission
+                </label>
+              </div>
+
               {quizMode === 'ai' ? (
                 <div>
                   <p style={{ color: theme.subtext, fontSize: '14px', marginBottom: '16px' }}>
@@ -1811,6 +2055,20 @@ function TeacherControlCenter({ onLeave, onResumeTeacher, isDark, onToggleTheme,
                   Topic: <strong>{session.activeQuiz.topic}</strong> | {session.activeQuiz.questions.length} Total Questions
                 </div>
 
+                <details style={{ background: theme.cardSecondary, border: `1px solid ${theme.border}`, borderRadius: '12px', padding: '12px 14px', marginBottom: '20px' }}>
+                  <summary style={{ cursor: 'pointer', color: theme.primary, fontWeight: 800 }}>View Complete Answer Key</summary>
+                  <div style={{ marginTop: '10px' }}>
+                    {session.activeQuiz.questions.map((question, index) => (
+                      <div key={question.id} style={{ padding: '8px 0', borderBottom: `1px solid ${theme.border}`, color: theme.text, fontSize: '13px' }}>
+                        <strong>{index + 1}. {question.question}</strong>
+                        <div style={{ color: theme.emerald, marginTop: '4px' }}>
+                          Correct answer: {question.options[question.correctIndex] || 'Not specified'}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                   <h5 style={{ fontSize: '14px', fontWeight: 700, color: theme.text, margin: 0 }}>
                     Live Student Submissions ({totalQuizSubmissions})
@@ -1892,6 +2150,13 @@ function StudentPortal({ onLeave, isDark, onToggleTheme, defaultCode = '', isStu
   const [isSubmittingQuiz, setIsSubmittingQuiz] = useState(false);
   const [quizSubmissionResult, setQuizSubmissionResult] = useState(null);
   const [submitError, setSubmitError] = useState('');
+  const [quizTimeRemaining, setQuizTimeRemaining] = useState(null);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [feedbackAnonymous, setFeedbackAnonymous] = useState(false);
+  const [feedbackStatus, setFeedbackStatus] = useState('');
+  const [doubtMessage, setDoubtMessage] = useState('');
+  const [doubtStatus, setDoubtStatus] = useState('');
+  const [handRaised, setHandRaised] = useState(false);
   const lastActiveQuizIdRef = useRef(null);
 
   const pollIntervalRef = useRef(null);
@@ -1939,7 +2204,7 @@ function StudentPortal({ onLeave, isDark, onToggleTheme, defaultCode = '', isStu
     if (!classCode || !participantId) return;
 
     try {
-      const res = await fetch(`${API_BASE}/session/${classCode.trim()}`);
+      const res = await fetch(`${API_BASE}/session/${classCode.trim()}?role=student&participantId=${encodeURIComponent(participantId)}`);
       const data = await res.json();
       if (res.ok && data.session) {
         const currentSession = data.session;
@@ -1998,6 +2263,22 @@ function StudentPortal({ onLeave, isDark, onToggleTheme, defaultCode = '', isStu
     };
   }, [status, fetchStudentSessionStatus]);
 
+  useEffect(() => {
+    const expiresAt = sessionData?.activeQuiz?.expiresAt;
+    if (!expiresAt) {
+      setQuizTimeRemaining(null);
+      return undefined;
+    }
+
+    const updateRemaining = () => {
+      setQuizTimeRemaining(Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000)));
+    };
+
+    updateRemaining();
+    const timer = setInterval(updateRemaining, 1000);
+    return () => clearInterval(timer);
+  }, [sessionData?.activeQuiz?.id, sessionData?.activeQuiz?.expiresAt]);
+
   // 3. Vote in Poll
   const handleVote = async (optionId) => {
     if (!sessionData?.activePoll) return;
@@ -2051,11 +2332,61 @@ function StudentPortal({ onLeave, isDark, onToggleTheme, defaultCode = '', isStu
         if (data.session) setSessionData(data.session);
       } else {
         setSubmitError(data.error || 'Could not submit quiz. Please try again.');
+        if (data.expired) setQuizTimeRemaining(0);
       }
     } catch (err) {
       setSubmitError(err.message || 'Connection error while submitting quiz.');
     } finally {
       setIsSubmittingQuiz(false);
+    }
+  };
+
+  const handleSubmitFeedback = async () => {
+    if (!feedbackMessage.trim()) return;
+    setFeedbackStatus('Submitting...');
+    try {
+      const res = await fetch(`${API_BASE}/session/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: classCode.trim(),
+          participantId,
+          studentName,
+          message: feedbackMessage.trim(),
+          anonymous: feedbackAnonymous,
+        }),
+      });
+      const data = await readApiResponse(res);
+      setFeedbackMessage('');
+      setFeedbackStatus('Feedback submitted. Thank you.');
+    } catch (err) {
+      setFeedbackStatus(err.message);
+    }
+  };
+
+  const handleStudentBack = () => {
+    if (isStudentLocked) {
+      window.history.back();
+      return;
+    }
+    onLeave();
+  };
+
+  const sendDoubt = async (message, type = 'doubt') => {
+    setDoubtStatus('Sending...');
+    try {
+      const res = await fetch(`${API_BASE}/session/doubt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: classCode.trim(), participantId, studentName, message, type }),
+      });
+      const data = await readApiResponse(res);
+      setDoubtMessage('');
+      setHandRaised(type === 'hand');
+      setDoubtStatus(type === 'hand' ? 'Hand raised.' : 'Doubt sent.');
+      if (data.doubt) setSessionData((current) => ({ ...current, doubts: [data.doubt, ...(current.doubts || [])] }));
+    } catch (err) {
+      setDoubtStatus(err.message);
     }
   };
 
@@ -2066,6 +2397,7 @@ function StudentPortal({ onLeave, isDark, onToggleTheme, defaultCode = '', isStu
         <TopNavbar
           isDark={isDark}
           onToggleTheme={onToggleTheme}
+          onBack={handleStudentBack}
           onLeave={isStudentLocked ? null : onLeave}
           userLabel="Student Portal"
           isStudentLocked={isStudentLocked}
@@ -2191,6 +2523,7 @@ function StudentPortal({ onLeave, isDark, onToggleTheme, defaultCode = '', isStu
         <TopNavbar
           isDark={isDark}
           onToggleTheme={onToggleTheme}
+          onBack={() => setStatus('form')}
           userLabel="Waiting Room"
           isStudentLocked={isStudentLocked}
         />
@@ -2256,12 +2589,17 @@ function StudentPortal({ onLeave, isDark, onToggleTheme, defaultCode = '', isStu
   const hasVotedCurrentPoll = activePoll?.votes?.[participantId];
   const submissionRecord = activeQuiz?.submissions?.[participantId];
   const isQuizCompleted = submissionRecord || (quizSubmissionResult && quizSubmissionResult.quizId === activeQuiz?.id);
+  const quizExpired = quizTimeRemaining !== null && quizTimeRemaining <= 0;
+  const formattedQuizTime = quizTimeRemaining === null
+    ? null
+    : `${Math.floor(quizTimeRemaining / 60)}:${String(quizTimeRemaining % 60).padStart(2, '0')}`;
 
   return (
     <div style={{ minHeight: '100vh', background: theme.bg, display: 'flex', flexDirection: 'column' }}>
       <TopNavbar
         isDark={isDark}
         onToggleTheme={onToggleTheme}
+        onBack={handleStudentBack}
         onLeave={isStudentLocked ? null : () => {
           if (window.confirm('Are you sure you want to leave this class?')) {
             setStatus('form');
@@ -2374,8 +2712,8 @@ function StudentPortal({ onLeave, isDark, onToggleTheme, defaultCode = '', isStu
               {activeQuiz ? '✨ Active Quiz' : '✨ Interactive Quiz'}
             </span>
             {activeQuiz && (
-              <span style={{ fontSize: '12px', color: theme.sky, fontWeight: 700 }}>
-                ● {activeQuiz.questions.length} Questions Assessment
+              <span style={{ fontSize: '12px', color: quizExpired ? theme.red : theme.sky, fontWeight: 700 }}>
+                {quizExpired ? '⏱ Time expired' : `⏱ ${formattedQuizTime} remaining`} · {activeQuiz.questions.length} Questions
               </span>
             )}
           </div>
@@ -2439,9 +2777,27 @@ function StudentPortal({ onLeave, isDark, onToggleTheme, defaultCode = '', isStu
                   </span>
                 </div>
               </div>
+
+              {quizSubmissionResult?.answerKey?.length > 0 && (
+                <div style={{ textAlign: 'left', background: theme.card, border: `1px solid ${theme.border}`, borderRadius: '12px', padding: '16px', marginTop: '8px' }}>
+                  <h4 style={{ color: theme.text, margin: '0 0 10px', fontSize: '16px' }}>Answer Key</h4>
+                  {quizSubmissionResult.answerKey.map((answer, index) => (
+                    <div key={answer.questionId || index} style={{ padding: '8px 0', borderBottom: `1px solid ${theme.border}`, color: theme.text, fontSize: '13px' }}>
+                      <strong>{index + 1}. {answer.question}</strong>
+                      <div style={{ color: theme.emerald, marginTop: '4px' }}>Correct answer: {answer.correctAnswer}</div>
+                      {answer.explanation && <div style={{ color: theme.subtext, marginTop: '4px' }}>Explanation: {answer.explanation}</div>}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
             <div>
+              {quizExpired && (
+                <div style={{ background: theme.redBg, border: `1px solid ${theme.red}`, color: theme.red, padding: '12px 16px', borderRadius: '10px', fontSize: '14px', marginBottom: '16px', textAlign: 'center', fontWeight: 700 }}>
+                  The time limit has expired. This quiz can no longer be submitted.
+                </div>
+              )}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <h3 style={{ fontSize: '18px', fontWeight: 800, color: theme.text, margin: 0 }}>
                   {activeQuiz.title}
@@ -2514,6 +2870,7 @@ function StudentPortal({ onLeave, isDark, onToggleTheme, defaultCode = '', isStu
                               [qId]: oIdx,
                             });
                           }}
+                          disabled={quizExpired}
                           style={{
                             padding: '14px 16px',
                             borderRadius: '12px',
@@ -2524,6 +2881,7 @@ function StudentPortal({ onLeave, isDark, onToggleTheme, defaultCode = '', isStu
                             fontWeight: 600,
                             textAlign: 'left',
                             cursor: 'pointer',
+                            opacity: quizExpired ? 0.55 : 1,
                             display: 'flex',
                             alignItems: 'center',
                             gap: '12px',
@@ -2588,7 +2946,7 @@ function StudentPortal({ onLeave, isDark, onToggleTheme, defaultCode = '', isStu
                     ) : (
                       <button
                         onClick={handleSubmitQuiz}
-                        disabled={isSubmittingQuiz}
+                          disabled={isSubmittingQuiz || quizExpired}
                         style={{
                           padding: '10px 24px',
                           borderRadius: '10px',
@@ -2599,7 +2957,7 @@ function StudentPortal({ onLeave, isDark, onToggleTheme, defaultCode = '', isStu
                           cursor: 'pointer',
                         }}
                       >
-                        {isSubmittingQuiz ? 'Submitting...' : '✓ Submit Quiz'}
+                        {isSubmittingQuiz ? 'Submitting...' : quizExpired ? 'Time Expired' : '✓ Submit Quiz'}
                       </button>
                     )}
                   </div>
@@ -2607,6 +2965,45 @@ function StudentPortal({ onLeave, isDark, onToggleTheme, defaultCode = '', isStu
               )}
             </div>
           )}
+        </div>
+
+        <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: '20px', padding: '24px', marginTop: '24px', marginBottom: '24px' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: 800, color: theme.text, margin: '0 0 6px' }}>Ask the Teacher</h3>
+          <p style={{ color: theme.subtext, fontSize: '13px', margin: '0 0 14px' }}>Raise your hand or send a question during the live session.</p>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '12px' }}>
+            <button onClick={() => sendDoubt('Student raised a hand.', 'hand')} disabled={handRaised || doubtStatus === 'Sending...'} style={{ padding: '10px 14px', borderRadius: '9px', border: `1px solid ${theme.amber}`, background: handRaised ? theme.cardSecondary : 'transparent', color: theme.amber, fontWeight: 700, cursor: 'pointer' }}>
+              {handRaised ? '✋ Hand Raised' : '✋ Raise Hand'}
+            </button>
+          </div>
+          <textarea value={doubtMessage} onChange={(event) => setDoubtMessage(event.target.value)} placeholder="Type your doubt..." rows={3} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: `1px solid ${theme.border}`, background: theme.cardSecondary, color: theme.text, resize: 'vertical', boxSizing: 'border-box', marginBottom: '10px' }} />
+          <button onClick={() => sendDoubt(doubtMessage.trim())} disabled={!doubtMessage.trim() || doubtStatus === 'Sending...'} style={{ padding: '10px 16px', borderRadius: '10px', border: 'none', background: theme.sky, color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Ask Doubt</button>
+          {doubtStatus && <span style={{ marginLeft: '12px', color: theme.subtext, fontSize: '13px' }}>{doubtStatus}</span>}
+        </div>
+
+        <div style={{ background: theme.card, border: `1px solid ${theme.border}`, borderRadius: '20px', padding: '24px', marginTop: '24px' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: 800, color: theme.text, margin: '0 0 6px' }}>Share Feedback</h3>
+          <p style={{ color: theme.subtext, fontSize: '13px', margin: '0 0 14px' }}>
+            Tell the teacher what worked well or what could improve.
+          </p>
+          <textarea
+            value={feedbackMessage}
+            onChange={(event) => setFeedbackMessage(event.target.value)}
+            placeholder="Write your review..."
+            rows={4}
+            style={{ width: '100%', padding: '12px', borderRadius: '10px', border: `1px solid ${theme.border}`, background: theme.cardSecondary, color: theme.text, resize: 'vertical', boxSizing: 'border-box', marginBottom: '10px' }}
+          />
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: theme.subtext, fontSize: '13px', marginBottom: '12px' }}>
+            <input type="checkbox" checked={feedbackAnonymous} onChange={(event) => setFeedbackAnonymous(event.target.checked)} />
+            Submit anonymously
+          </label>
+          <button
+            onClick={handleSubmitFeedback}
+            disabled={!feedbackMessage.trim() || feedbackStatus === 'Submitting...'}
+            style={{ padding: '10px 16px', borderRadius: '10px', border: 'none', background: theme.primary, color: '#fff', fontWeight: 700, cursor: 'pointer' }}
+          >
+            Submit Feedback
+          </button>
+          {feedbackStatus && <span style={{ marginLeft: '12px', color: theme.subtext, fontSize: '13px' }}>{feedbackStatus}</span>}
         </div>
       </div>
     </div>
@@ -2618,7 +3015,7 @@ function StudentPortal({ onLeave, isDark, onToggleTheme, defaultCode = '', isStu
 // -------------------------------------------------------------
 export default function App() {
   // role starts null until URL detection runs in useEffect
-  const [role, setRole] = useState(null); // null | 'teacher' | 'student'
+  const [role, setRole] = useState(null); // null | 'picker' | 'teacher' | 'student'
   const [isStudentLocked, setIsStudentLocked] = useState(false);
   const [urlCode, setUrlCode] = useState('');
   const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false);
@@ -2664,6 +3061,11 @@ export default function App() {
     setRole('teacher');
   };
 
+  const openTeacherSetup = () => {
+    setActiveTeacherSession(null);
+    setRole('teacher');
+  };
+
   // Show nothing until URL detection resolves to avoid flash
   if (role === null) return null;
 
@@ -2690,11 +3092,31 @@ export default function App() {
       {/* ── TEACHER PORTAL ──────────────────────────────────────────
           Default view for root URL (/).
           Teacher can create a new class or resume an existing one. */}
+      {role === 'picker' && (
+        <RoleSelectScreen
+          onStartNewClass={openTeacherSetup}
+          onResumeTeacher={() => {
+            setRole('teacher');
+            setIsTeacherModalOpen(true);
+          }}
+          onSelectStudent={() => {
+            setIsStudentLocked(false);
+            setRole('student');
+          }}
+          isDark={isDark}
+          onToggleTheme={toggleTheme}
+        />
+      )}
+
       {role === 'teacher' && (
         <TeacherControlCenter
           onLeave={() => {
             // "Leave" resets to a fresh teacher setup — no role picker
             setActiveTeacherSession(null);
+          }}
+          onBack={() => {
+            setActiveTeacherSession(null);
+            setRole('picker');
           }}
           onResumeTeacher={() => setIsTeacherModalOpen(true)}
           isDark={isDark}

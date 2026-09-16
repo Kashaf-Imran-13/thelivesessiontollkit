@@ -1,0 +1,1223 @@
+{
+  "290871": {
+    "code": "290871",
+    "hostName": "kashaf",
+    "teacherPasscode": "1234",
+    "createdAt": 1789577269295,
+    "localIp": "192.168.10.14",
+    "joinUrl": "http://192.168.10.14:5000/?code=290871",
+    "waitingRoom": [],
+    "activeParticipants": [
+      {
+        "id": "student_mu4c4i5v_a4wku",
+        "name": "javeria",
+        "requestedAt": 1789577310451,
+        "joinedAt": 1789577316134
+      }
+    ],
+    "activePoll": {
+      "id": "poll_mu4c5rzc_wgv8o",
+      "question": "which topic do we review first?",
+      "options": [
+        {
+          "id": "opt_1",
+          "text": "chap1"
+        },
+        {
+          "id": "opt_2",
+          "text": "chap2"
+        },
+        {
+          "id": "opt_3",
+          "text": "chap3"
+        }
+      ],
+      "isActive": true,
+      "createdAt": 1789577369832,
+      "votes": {
+        "student_mu4c4i5v_a4wku": {
+          "optionId": "opt_2",
+          "studentName": "javeria",
+          "votedAt": 1789577458442
+        }
+      }
+    },
+    "pollsHistory": [],
+    "activeQuiz": {
+      "id": "ai_quiz_mu4c9ks2_i2o8o",
+      "title": "phthon Quiz",
+      "topic": "phthon",
+      "isAI": true,
+      "isActive": true,
+      "createdAt": 1789577547122,
+      "durationSeconds": 60,
+      "expiresAt": 1789577607122,
+      "questions": [
+        {
+          "id": "q_1_mu4c9ks2_wqrp",
+          "question": "Question 1: What is the foundational core principle behind phthon?",
+          "options": [
+            "Core theoretical architecture and systematic implementation rules",
+            "Arbitrary execution without structural boundaries",
+            "Purely visual styling without functional significance",
+            "Legacy deprecated methodology"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "id": "q_2_mu4c9ks2_b9h5",
+          "question": "Question 2: Which practice is essential when implementing phthon?",
+          "options": [
+            "Skipping validation and error logging",
+            "Continuous verification, clean modular design, and robust testing",
+            "Manual repetitive tasks without automation",
+            "Hardcoding static references across all layers"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "id": "q_3_mu4c9ks2_z7ze",
+          "question": "Question 3: What is the primary operational advantage of mastering phthon?",
+          "options": [
+            "Increased latency and redundant processing cycles",
+            "Fragile execution flow prone to silent crashes",
+            "High efficiency, systematic scalability, and predictable outcomes",
+            "Uncontrolled resource consumption"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "id": "q_4_mu4c9ks2_vd17",
+          "question": "Question 4: In phthon, how are edge cases and unexpected inputs best managed?",
+          "options": [
+            "Ignoring invalid inputs and continuing execution",
+            "Crashing the system without reporting diagnostic data",
+            "Defensive validation, explicit exception handling, and structured recovery",
+            "Disabling all boundary limits"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "id": "q_5_mu4c9ks2_jcyl",
+          "question": "Question 5: What is the foundational core principle behind phthon?",
+          "options": [
+            "Core theoretical architecture and systematic implementation rules",
+            "Arbitrary execution without structural boundaries",
+            "Purely visual styling without functional significance",
+            "Legacy deprecated methodology"
+          ],
+          "correctIndex": 0
+        }
+      ],
+      "submissions": {
+        "student_mu4c4i5v_a4wku": {
+          "quizId": "ai_quiz_mu4c9ks2_i2o8o",
+          "quizTitle": "phthon Quiz",
+          "participantId": "student_mu4c4i5v_a4wku",
+          "studentName": "javeria",
+          "answers": {
+            "q_1_mu4c9ks2_wqrp": 1,
+            "q_2_mu4c9ks2_b9h5": 3,
+            "q_3_mu4c9ks2_z7ze": 3,
+            "q_4_mu4c9ks2_vd17": 2,
+            "q_5_mu4c9ks2_jcyl": 1
+          },
+          "score": 1,
+          "total": 5,
+          "percentage": 20,
+          "submittedAt": 1789577567124
+        }
+      }
+    },
+    "quizzesHistory": [
+      {
+        "id": "ai_quiz_mu4c6lb1_0la47",
+        "title": "science Quiz",
+        "topic": "science",
+        "isAI": true,
+        "isActive": false,
+        "createdAt": 1789577407837,
+        "durationSeconds": 180,
+        "expiresAt": 1789577587837,
+        "questions": [
+          {
+            "id": "q_1_mu4c6lb1_b218",
+            "question": "What organelle is known as the powerhouse of eukaryotic cells?",
+            "options": [
+              "Ribosome",
+              "Mitochondria",
+              "Endoplasmic Reticulum",
+              "Golgi Apparatus"
+            ],
+            "correctIndex": 1
+          },
+          {
+            "id": "q_2_mu4c6lb1_qw7q",
+            "question": "What is the chemical formula for water?",
+            "options": [
+              "CO2",
+              "NaCl",
+              "H2O",
+              "CH4"
+            ],
+            "correctIndex": 2
+          },
+          {
+            "id": "q_3_mu4c6lb1_3ef6",
+            "question": "Which process do plants use to convert sunlight into chemical energy?",
+            "options": [
+              "Fermentation",
+              "Cellular Respiration",
+              "Photosynthesis",
+              "Transpiration"
+            ],
+            "correctIndex": 2
+          },
+          {
+            "id": "q_4_mu4c6lb1_o88g",
+            "question": "Question 4: What is the foundational core principle behind science?",
+            "options": [
+              "Core theoretical architecture and systematic implementation rules",
+              "Arbitrary execution without structural boundaries",
+              "Purely visual styling without functional significance",
+              "Legacy deprecated methodology"
+            ],
+            "correctIndex": 0
+          },
+          {
+            "id": "q_5_mu4c6lb1_4sfc",
+            "question": "Question 5: Which practice is essential when implementing science?",
+            "options": [
+              "Skipping validation and error logging",
+              "Continuous verification, clean modular design, and robust testing",
+              "Manual repetitive tasks without automation",
+              "Hardcoding static references across all layers"
+            ],
+            "correctIndex": 1
+          }
+        ],
+        "submissions": {
+          "student_mu4c4i5v_a4wku": {
+            "quizId": "ai_quiz_mu4c6lb1_0la47",
+            "quizTitle": "science Quiz",
+            "participantId": "student_mu4c4i5v_a4wku",
+            "studentName": "javeria",
+            "answers": {
+              "q_1_mu4c6lb1_b218": 0,
+              "q_2_mu4c6lb1_qw7q": 2,
+              "q_3_mu4c6lb1_3ef6": 1,
+              "q_4_mu4c6lb1_o88g": 2,
+              "q_5_mu4c6lb1_4sfc": 2
+            },
+            "score": 1,
+            "total": 5,
+            "percentage": 20,
+            "submittedAt": 1789577449660
+          }
+        },
+        "closedAt": 1789577493219
+      }
+    ],
+    "quizSubmissions": [
+      {
+        "quizId": "ai_quiz_mu4c9ks2_i2o8o",
+        "quizTitle": "phthon Quiz",
+        "participantId": "student_mu4c4i5v_a4wku",
+        "studentName": "javeria",
+        "answers": {
+          "q_1_mu4c9ks2_wqrp": 1,
+          "q_2_mu4c9ks2_b9h5": 3,
+          "q_3_mu4c9ks2_z7ze": 3,
+          "q_4_mu4c9ks2_vd17": 2,
+          "q_5_mu4c9ks2_jcyl": 1
+        },
+        "score": 1,
+        "total": 5,
+        "percentage": 20,
+        "submittedAt": 1789577567124
+      },
+      {
+        "quizId": "ai_quiz_mu4c6lb1_0la47",
+        "quizTitle": "science Quiz",
+        "participantId": "student_mu4c4i5v_a4wku",
+        "studentName": "javeria",
+        "answers": {
+          "q_1_mu4c6lb1_b218": 0,
+          "q_2_mu4c6lb1_qw7q": 2,
+          "q_3_mu4c6lb1_3ef6": 1,
+          "q_4_mu4c6lb1_o88g": 2,
+          "q_5_mu4c6lb1_4sfc": 2
+        },
+        "score": 1,
+        "total": 5,
+        "percentage": 20,
+        "submittedAt": 1789577449660
+      }
+    ]
+  },
+  "316458": {
+    "code": "316458",
+    "hostName": "Answer Key Test",
+    "teacherPasscode": "2468",
+    "createdAt": 1789580548489,
+    "localIp": "192.168.10.14",
+    "joinUrl": "http://192.168.10.14:5103/?code=316458",
+    "waitingRoom": [
+      {
+        "id": "student_mu4e1wnq_3ln4m",
+        "sessionId": "316458",
+        "name": "Student",
+        "requestedAt": 1789580548502,
+        "participationStatus": "waiting"
+      }
+    ],
+    "activeParticipants": [],
+    "participantHistory": [
+      {
+        "id": "student_mu4e1wnq_3ln4m",
+        "sessionId": "316458",
+        "name": "Student",
+        "requestedAt": 1789580548502,
+        "participationStatus": "waiting"
+      }
+    ],
+    "activePoll": null,
+    "pollsHistory": [],
+    "activeQuiz": {
+      "id": "quiz_mu4e1wpe_3lhuq",
+      "sessionId": "316458",
+      "title": "Private Key",
+      "topic": "Custom Topic",
+      "isActive": true,
+      "createdAt": 1789580548563,
+      "durationSeconds": 300,
+      "expiresAt": 1789580848563,
+      "questions": [
+        {
+          "id": "q1",
+          "question": "2+2?",
+          "options": [
+            "3",
+            "4"
+          ],
+          "correctIndex": 1
+        }
+      ],
+      "submissions": {
+        "15788": {
+          "quizId": "quiz_mu4e1wpe_3lhuq",
+          "sessionId": "316458",
+          "quizTitle": "Private Key",
+          "participantId": 15788,
+          "studentName": "Student",
+          "answers": {
+            "q1": 1
+          },
+          "score": 1,
+          "total": 1,
+          "percentage": 100,
+          "submittedAt": 1789580548585
+        }
+      },
+      "showAnswerKey": false
+    },
+    "quizzesHistory": [],
+    "quizSubmissions": [
+      {
+        "quizId": "quiz_mu4e1wpe_3lhuq",
+        "sessionId": "316458",
+        "quizTitle": "Private Key",
+        "participantId": 15788,
+        "studentName": "Student",
+        "answers": {
+          "q1": 1
+        },
+        "score": 1,
+        "total": 1,
+        "percentage": 100,
+        "submittedAt": 1789580548585
+      }
+    ],
+    "feedback": []
+  },
+  "521639": {
+    "code": "521639",
+    "hostName": "Answer Key Test",
+    "teacherPasscode": "2468",
+    "createdAt": 1789580560897,
+    "localIp": "192.168.10.14",
+    "joinUrl": "http://192.168.10.14:5103/?code=521639",
+    "waitingRoom": [],
+    "activeParticipants": [
+      {
+        "id": "student_mu4e2685_poe9d",
+        "sessionId": "521639",
+        "name": "Student",
+        "requestedAt": 1789580560901,
+        "participationStatus": "waiting",
+        "joinedAt": 1789580560904
+      }
+    ],
+    "participantHistory": [
+      {
+        "id": "student_mu4e2685_poe9d",
+        "sessionId": "521639",
+        "name": "Student",
+        "requestedAt": 1789580560901,
+        "participationStatus": "active",
+        "joinedAt": 1789580560904
+      }
+    ],
+    "activePoll": null,
+    "pollsHistory": [],
+    "activeQuiz": {
+      "id": "quiz_mu4e268d_pnv3q",
+      "sessionId": "521639",
+      "title": "Key Test",
+      "topic": "Custom Topic",
+      "isActive": true,
+      "createdAt": 1789580560909,
+      "durationSeconds": 300,
+      "expiresAt": 1789580860909,
+      "questions": [
+        {
+          "id": "q1",
+          "question": "2+2?",
+          "options": [
+            "3",
+            "4"
+          ],
+          "correctIndex": 1
+        }
+      ],
+      "submissions": {
+        "student_mu4e2685_poe9d": {
+          "quizId": "quiz_mu4e268d_pnv3q",
+          "sessionId": "521639",
+          "quizTitle": "Key Test",
+          "participantId": "student_mu4e2685_poe9d",
+          "studentName": "Student",
+          "answers": {
+            "q1": 1
+          },
+          "score": 1,
+          "total": 1,
+          "percentage": 100,
+          "submittedAt": 1789580560918
+        }
+      },
+      "showAnswerKey": false
+    },
+    "quizzesHistory": [],
+    "quizSubmissions": [
+      {
+        "quizId": "quiz_mu4e268d_pnv3q",
+        "sessionId": "521639",
+        "quizTitle": "Key Test",
+        "participantId": "student_mu4e2685_poe9d",
+        "studentName": "Student",
+        "answers": {
+          "q1": 1
+        },
+        "score": 1,
+        "total": 1,
+        "percentage": 100,
+        "submittedAt": 1789580560918
+      }
+    ],
+    "feedback": []
+  },
+  "526900": {
+    "code": "526900",
+    "hostName": "kashaf",
+    "teacherPasscode": "2345",
+    "createdAt": 1789582111911,
+    "localIp": "192.168.10.14",
+    "joinUrl": "http://192.168.10.14:5000/?code=526900",
+    "waitingRoom": [],
+    "activeParticipants": [
+      {
+        "id": "student_mu4f0ecq_vri2t",
+        "sessionId": "526900",
+        "name": "sadia",
+        "requestedAt": 1789582157738,
+        "participationStatus": "waiting",
+        "joinedAt": 1789582163180
+      }
+    ],
+    "participantHistory": [
+      {
+        "id": "student_mu4f0ecq_vri2t",
+        "sessionId": "526900",
+        "name": "sadia",
+        "requestedAt": 1789582157738,
+        "participationStatus": "active",
+        "joinedAt": 1789582163180
+      }
+    ],
+    "activePoll": null,
+    "pollsHistory": [],
+    "activeQuiz": {
+      "id": "ai_quiz_mu4f1w30_q6g54",
+      "sessionId": "526900",
+      "title": "biology Quiz",
+      "topic": "biology",
+      "isAI": true,
+      "isActive": true,
+      "createdAt": 1789582227372,
+      "durationSeconds": 300,
+      "expiresAt": 1789582527372,
+      "questions": [
+        {
+          "id": "q_1_mu4f1w30_olkw",
+          "question": "Question 1: What is the foundational core principle behind biology?",
+          "options": [
+            "Core theoretical architecture and systematic implementation rules",
+            "Arbitrary execution without structural boundaries",
+            "Purely visual styling without functional significance",
+            "Legacy deprecated methodology"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "id": "q_2_mu4f1w30_lpq6",
+          "question": "Question 2: Which practice is essential when implementing biology?",
+          "options": [
+            "Skipping validation and error logging",
+            "Continuous verification, clean modular design, and robust testing",
+            "Manual repetitive tasks without automation",
+            "Hardcoding static references across all layers"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "id": "q_3_mu4f1w30_fzdj",
+          "question": "Question 3: What is the primary operational advantage of mastering biology?",
+          "options": [
+            "Increased latency and redundant processing cycles",
+            "Fragile execution flow prone to silent crashes",
+            "High efficiency, systematic scalability, and predictable outcomes",
+            "Uncontrolled resource consumption"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "id": "q_4_mu4f1w30_wmw9",
+          "question": "Question 4: In biology, how are edge cases and unexpected inputs best managed?",
+          "options": [
+            "Ignoring invalid inputs and continuing execution",
+            "Crashing the system without reporting diagnostic data",
+            "Defensive validation, explicit exception handling, and structured recovery",
+            "Disabling all boundary limits"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "id": "q_5_mu4f1w30_yudb",
+          "question": "Question 5: What is the foundational core principle behind biology?",
+          "options": [
+            "Core theoretical architecture and systematic implementation rules",
+            "Arbitrary execution without structural boundaries",
+            "Purely visual styling without functional significance",
+            "Legacy deprecated methodology"
+          ],
+          "correctIndex": 0
+        }
+      ],
+      "submissions": {
+        "student_mu4f0ecq_vri2t": {
+          "quizId": "ai_quiz_mu4f1w30_q6g54",
+          "sessionId": "526900",
+          "quizTitle": "biology Quiz",
+          "participantId": "student_mu4f0ecq_vri2t",
+          "studentName": "sadia",
+          "answers": {
+            "q_1_mu4f1w30_olkw": 0,
+            "q_2_mu4f1w30_lpq6": 1,
+            "q_3_mu4f1w30_fzdj": 2,
+            "q_4_mu4f1w30_wmw9": 1,
+            "q_5_mu4f1w30_yudb": 2
+          },
+          "score": 3,
+          "total": 5,
+          "percentage": 60,
+          "submittedAt": 1789582249447
+        }
+      },
+      "showAnswerKey": false
+    },
+    "quizzesHistory": [],
+    "quizSubmissions": [
+      {
+        "quizId": "ai_quiz_mu4f1w30_q6g54",
+        "sessionId": "526900",
+        "quizTitle": "biology Quiz",
+        "participantId": "student_mu4f0ecq_vri2t",
+        "studentName": "sadia",
+        "answers": {
+          "q_1_mu4f1w30_olkw": 0,
+          "q_2_mu4f1w30_lpq6": 1,
+          "q_3_mu4f1w30_fzdj": 2,
+          "q_4_mu4f1w30_wmw9": 1,
+          "q_5_mu4f1w30_yudb": 2
+        },
+        "score": 3,
+        "total": 5,
+        "percentage": 60,
+        "submittedAt": 1789582249447
+      }
+    ],
+    "feedback": [
+      {
+        "id": "feedback_mu4f3sfl_dtl7z",
+        "participantId": "student_mu4f0ecq_vri2t",
+        "studentName": "Anonymous student",
+        "anonymous": true,
+        "message": "besttt",
+        "createdAt": 1789582315953
+      }
+    ]
+  },
+  "717895": {
+    "code": "717895",
+    "hostName": "kashaf",
+    "teacherPasscode": "1234",
+    "createdAt": 1789580992466,
+    "localIp": "192.168.10.14",
+    "joinUrl": "http://192.168.10.14:5000/?code=717895",
+    "waitingRoom": [],
+    "activeParticipants": [
+      {
+        "id": "student_mu4ec5kh_8908w",
+        "sessionId": "717895",
+        "name": "sara",
+        "requestedAt": 1789581026609,
+        "participationStatus": "waiting",
+        "joinedAt": 1789581035321
+      }
+    ],
+    "participantHistory": [
+      {
+        "id": "student_mu4ec5kh_8908w",
+        "sessionId": "717895",
+        "name": "sara",
+        "requestedAt": 1789581026609,
+        "participationStatus": "active",
+        "joinedAt": 1789581035321
+      }
+    ],
+    "activePoll": null,
+    "pollsHistory": [],
+    "activeQuiz": {
+      "id": "ai_quiz_mu4edb7l_8am47",
+      "sessionId": "717895",
+      "title": "easy questions of biology Quiz",
+      "topic": "easy questions of biology",
+      "isAI": true,
+      "isActive": true,
+      "createdAt": 1789581080578,
+      "durationSeconds": 180,
+      "expiresAt": 1789581260578,
+      "questions": [
+        {
+          "id": "q_1_mu4edb7l_qoun",
+          "question": "Question 1: What is the foundational core principle behind easy questions of biology?",
+          "options": [
+            "Core theoretical architecture and systematic implementation rules",
+            "Arbitrary execution without structural boundaries",
+            "Purely visual styling without functional significance",
+            "Legacy deprecated methodology"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "id": "q_2_mu4edb7l_tvta",
+          "question": "Question 2: Which practice is essential when implementing easy questions of biology?",
+          "options": [
+            "Skipping validation and error logging",
+            "Continuous verification, clean modular design, and robust testing",
+            "Manual repetitive tasks without automation",
+            "Hardcoding static references across all layers"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "id": "q_3_mu4edb7l_2mkl",
+          "question": "Question 3: What is the primary operational advantage of mastering easy questions of biology?",
+          "options": [
+            "Increased latency and redundant processing cycles",
+            "Fragile execution flow prone to silent crashes",
+            "High efficiency, systematic scalability, and predictable outcomes",
+            "Uncontrolled resource consumption"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "id": "q_4_mu4edb7l_8vlj",
+          "question": "Question 4: In easy questions of biology, how are edge cases and unexpected inputs best managed?",
+          "options": [
+            "Ignoring invalid inputs and continuing execution",
+            "Crashing the system without reporting diagnostic data",
+            "Defensive validation, explicit exception handling, and structured recovery",
+            "Disabling all boundary limits"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "id": "q_5_mu4edb7l_l021",
+          "question": "Question 5: What is the foundational core principle behind easy questions of biology?",
+          "options": [
+            "Core theoretical architecture and systematic implementation rules",
+            "Arbitrary execution without structural boundaries",
+            "Purely visual styling without functional significance",
+            "Legacy deprecated methodology"
+          ],
+          "correctIndex": 0
+        }
+      ],
+      "submissions": {
+        "student_mu4ec5kh_8908w": {
+          "quizId": "ai_quiz_mu4edb7l_8am47",
+          "sessionId": "717895",
+          "quizTitle": "easy questions of biology Quiz",
+          "participantId": "student_mu4ec5kh_8908w",
+          "studentName": "sara",
+          "answers": {
+            "q_1_mu4edb7l_qoun": 0,
+            "q_2_mu4edb7l_tvta": 2,
+            "q_3_mu4edb7l_2mkl": 1,
+            "q_4_mu4edb7l_8vlj": 2,
+            "q_5_mu4edb7l_l021": 1
+          },
+          "score": 2,
+          "total": 5,
+          "percentage": 40,
+          "submittedAt": 1789581102381
+        }
+      },
+      "showAnswerKey": true
+    },
+    "quizzesHistory": [],
+    "quizSubmissions": [
+      {
+        "quizId": "ai_quiz_mu4edb7l_8am47",
+        "sessionId": "717895",
+        "quizTitle": "easy questions of biology Quiz",
+        "participantId": "student_mu4ec5kh_8908w",
+        "studentName": "sara",
+        "answers": {
+          "q_1_mu4edb7l_qoun": 0,
+          "q_2_mu4edb7l_tvta": 2,
+          "q_3_mu4edb7l_2mkl": 1,
+          "q_4_mu4edb7l_8vlj": 2,
+          "q_5_mu4edb7l_l021": 1
+        },
+        "score": 2,
+        "total": 5,
+        "percentage": 40,
+        "submittedAt": 1789581102381
+      }
+    ],
+    "feedback": [
+      {
+        "id": "feedback_mu4eft0n_84zg6",
+        "participantId": "student_mu4ec5kh_8908w",
+        "studentName": "Anonymous student",
+        "anonymous": true,
+        "message": "you are the best",
+        "createdAt": 1789581196967
+      }
+    ]
+  },
+  "802747": {
+    "code": "802747",
+    "hostName": "Answer Key Test",
+    "teacherPasscode": "2468",
+    "createdAt": 1789580560928,
+    "localIp": "192.168.10.14",
+    "joinUrl": "http://192.168.10.14:5103/?code=802747",
+    "waitingRoom": [],
+    "activeParticipants": [
+      {
+        "id": "student_mu4e268z_7v0cc",
+        "sessionId": "802747",
+        "name": "Student",
+        "requestedAt": 1789580560931,
+        "participationStatus": "waiting",
+        "joinedAt": 1789580560934
+      }
+    ],
+    "participantHistory": [
+      {
+        "id": "student_mu4e268z_7v0cc",
+        "sessionId": "802747",
+        "name": "Student",
+        "requestedAt": 1789580560931,
+        "participationStatus": "active",
+        "joinedAt": 1789580560934
+      }
+    ],
+    "activePoll": null,
+    "pollsHistory": [],
+    "activeQuiz": {
+      "id": "quiz_mu4e2695_9i6ii",
+      "sessionId": "802747",
+      "title": "Key Test",
+      "topic": "Custom Topic",
+      "isActive": true,
+      "createdAt": 1789580560937,
+      "durationSeconds": 300,
+      "expiresAt": 1789580860937,
+      "questions": [
+        {
+          "id": "q1",
+          "question": "2+2?",
+          "options": [
+            "3",
+            "4"
+          ],
+          "correctIndex": 1
+        }
+      ],
+      "submissions": {
+        "student_mu4e268z_7v0cc": {
+          "quizId": "quiz_mu4e2695_9i6ii",
+          "sessionId": "802747",
+          "quizTitle": "Key Test",
+          "participantId": "student_mu4e268z_7v0cc",
+          "studentName": "Student",
+          "answers": {
+            "q1": 1
+          },
+          "score": 1,
+          "total": 1,
+          "percentage": 100,
+          "submittedAt": 1789580561235
+        }
+      },
+      "showAnswerKey": true
+    },
+    "quizzesHistory": [],
+    "quizSubmissions": [
+      {
+        "quizId": "quiz_mu4e2695_9i6ii",
+        "sessionId": "802747",
+        "quizTitle": "Key Test",
+        "participantId": "student_mu4e268z_7v0cc",
+        "studentName": "Student",
+        "answers": {
+          "q1": 1
+        },
+        "score": 1,
+        "total": 1,
+        "percentage": 100,
+        "submittedAt": 1789580561235
+      }
+    ],
+    "feedback": []
+  },
+  "818726": {
+    "code": "818726",
+    "hostName": "kashaf imran",
+    "teacherPasscode": "1234",
+    "createdAt": 1789578398433,
+    "localIp": "192.168.10.14",
+    "joinUrl": "http://192.168.10.14:5000/?code=818726",
+    "waitingRoom": [],
+    "activeParticipants": [
+      {
+        "id": "student_mu4csc0x_qps18",
+        "name": "sadia",
+        "requestedAt": 1789578422241,
+        "joinedAt": 1789578427754
+      }
+    ],
+    "activePoll": {
+      "id": "poll_mu4cxir1_geo0a",
+      "question": "which topic do we review first",
+      "options": [
+        {
+          "id": "opt_1",
+          "text": "photosynthesis"
+        },
+        {
+          "id": "opt_2",
+          "text": "tissues"
+        }
+      ],
+      "isActive": true,
+      "createdAt": 1789578664237,
+      "votes": {
+        "student_mu4csc0x_qps18": {
+          "optionId": "opt_1",
+          "studentName": "sadia",
+          "votedAt": 1789578672931
+        }
+      }
+    },
+    "pollsHistory": [],
+    "activeQuiz": {
+      "id": "ai_quiz_mu4cti18_hczlf",
+      "title": "photosynthesis Quiz",
+      "topic": "photosynthesis",
+      "isAI": true,
+      "isActive": true,
+      "createdAt": 1789578476684,
+      "durationSeconds": 300,
+      "expiresAt": 1789578776684,
+      "questions": [
+        {
+          "id": "q_1_mu4cti18_9zrj",
+          "question": "Question 1: What is the foundational core principle behind photosynthesis?",
+          "options": [
+            "Core theoretical architecture and systematic implementation rules",
+            "Arbitrary execution without structural boundaries",
+            "Purely visual styling without functional significance",
+            "Legacy deprecated methodology"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "id": "q_2_mu4cti18_clm9",
+          "question": "Question 2: Which practice is essential when implementing photosynthesis?",
+          "options": [
+            "Skipping validation and error logging",
+            "Continuous verification, clean modular design, and robust testing",
+            "Manual repetitive tasks without automation",
+            "Hardcoding static references across all layers"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "id": "q_3_mu4cti18_r17f",
+          "question": "Question 3: What is the primary operational advantage of mastering photosynthesis?",
+          "options": [
+            "Increased latency and redundant processing cycles",
+            "Fragile execution flow prone to silent crashes",
+            "High efficiency, systematic scalability, and predictable outcomes",
+            "Uncontrolled resource consumption"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "id": "q_4_mu4cti18_pojk",
+          "question": "Question 4: In photosynthesis, how are edge cases and unexpected inputs best managed?",
+          "options": [
+            "Ignoring invalid inputs and continuing execution",
+            "Crashing the system without reporting diagnostic data",
+            "Defensive validation, explicit exception handling, and structured recovery",
+            "Disabling all boundary limits"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "id": "q_5_mu4cti18_8exh",
+          "question": "Question 5: What is the foundational core principle behind photosynthesis?",
+          "options": [
+            "Core theoretical architecture and systematic implementation rules",
+            "Arbitrary execution without structural boundaries",
+            "Purely visual styling without functional significance",
+            "Legacy deprecated methodology"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "id": "q_6_mu4cti18_bdh9",
+          "question": "Question 6: Which practice is essential when implementing photosynthesis?",
+          "options": [
+            "Skipping validation and error logging",
+            "Continuous verification, clean modular design, and robust testing",
+            "Manual repetitive tasks without automation",
+            "Hardcoding static references across all layers"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "id": "q_7_mu4cti18_hgx6",
+          "question": "Question 7: What is the primary operational advantage of mastering photosynthesis?",
+          "options": [
+            "Increased latency and redundant processing cycles",
+            "Fragile execution flow prone to silent crashes",
+            "High efficiency, systematic scalability, and predictable outcomes",
+            "Uncontrolled resource consumption"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "id": "q_8_mu4cti18_e9da",
+          "question": "Question 8: In photosynthesis, how are edge cases and unexpected inputs best managed?",
+          "options": [
+            "Ignoring invalid inputs and continuing execution",
+            "Crashing the system without reporting diagnostic data",
+            "Defensive validation, explicit exception handling, and structured recovery",
+            "Disabling all boundary limits"
+          ],
+          "correctIndex": 2
+        }
+      ],
+      "submissions": {
+        "student_mu4csc0x_qps18": {
+          "quizId": "ai_quiz_mu4cti18_hczlf",
+          "quizTitle": "photosynthesis Quiz",
+          "participantId": "student_mu4csc0x_qps18",
+          "studentName": "sadia",
+          "answers": {
+            "q_1_mu4cti18_9zrj": 1,
+            "q_2_mu4cti18_clm9": 2,
+            "q_3_mu4cti18_r17f": 1,
+            "q_4_mu4cti18_pojk": 2,
+            "q_5_mu4cti18_8exh": 0,
+            "q_6_mu4cti18_bdh9": 1,
+            "q_7_mu4cti18_hgx6": 3,
+            "q_8_mu4cti18_e9da": 2
+          },
+          "score": 4,
+          "total": 8,
+          "percentage": 50,
+          "submittedAt": 1789578513698
+        }
+      }
+    },
+    "quizzesHistory": [],
+    "quizSubmissions": [
+      {
+        "quizId": "ai_quiz_mu4cti18_hczlf",
+        "quizTitle": "photosynthesis Quiz",
+        "participantId": "student_mu4csc0x_qps18",
+        "studentName": "sadia",
+        "answers": {
+          "q_1_mu4cti18_9zrj": 1,
+          "q_2_mu4cti18_clm9": 2,
+          "q_3_mu4cti18_r17f": 1,
+          "q_4_mu4cti18_pojk": 2,
+          "q_5_mu4cti18_8exh": 0,
+          "q_6_mu4cti18_bdh9": 1,
+          "q_7_mu4cti18_hgx6": 3,
+          "q_8_mu4cti18_e9da": 2
+        },
+        "score": 4,
+        "total": 8,
+        "percentage": 50,
+        "submittedAt": 1789578513698
+      }
+    ]
+  },
+  "854229": {
+    "code": "854229",
+    "hostName": "kashaf",
+    "teacherPasscode": "1303",
+    "createdAt": 1789579468654,
+    "localIp": "192.168.10.14",
+    "joinUrl": "http://192.168.10.14:5000/?code=854229",
+    "waitingRoom": [],
+    "activeParticipants": [
+      {
+        "id": "student_mu4dh1w6_99tjz",
+        "name": "javeria",
+        "requestedAt": 1789579575510,
+        "joinedAt": 1789579584357
+      },
+      {
+        "id": "student_mu4dq2em_267tq",
+        "name": "sada",
+        "requestedAt": 1789579996078,
+        "participationStatus": "waiting",
+        "joinedAt": 1789580001270
+      }
+    ],
+    "activePoll": null,
+    "pollsHistory": [],
+    "activeQuiz": {
+      "id": "ai_quiz_mu4dgnp2_7o4ok",
+      "title": "science Quiz",
+      "topic": "science",
+      "isAI": true,
+      "isActive": true,
+      "createdAt": 1789579557110,
+      "durationSeconds": 120,
+      "expiresAt": 1789579677110,
+      "questions": [
+        {
+          "id": "q_1_mu4dgnp2_z42h",
+          "question": "What organelle is known as the powerhouse of eukaryotic cells?",
+          "options": [
+            "Ribosome",
+            "Mitochondria",
+            "Endoplasmic Reticulum",
+            "Golgi Apparatus"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "id": "q_2_mu4dgnp2_w9fi",
+          "question": "What is the chemical formula for water?",
+          "options": [
+            "CO2",
+            "NaCl",
+            "H2O",
+            "CH4"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "id": "q_3_mu4dgnp2_fo90",
+          "question": "Which process do plants use to convert sunlight into chemical energy?",
+          "options": [
+            "Fermentation",
+            "Cellular Respiration",
+            "Photosynthesis",
+            "Transpiration"
+          ],
+          "correctIndex": 2
+        }
+      ],
+      "submissions": {
+        "student_mu4dh1w6_99tjz": {
+          "quizId": "ai_quiz_mu4dgnp2_7o4ok",
+          "quizTitle": "science Quiz",
+          "participantId": "student_mu4dh1w6_99tjz",
+          "studentName": "javeria",
+          "answers": {
+            "q_1_mu4dgnp2_z42h": 1,
+            "q_2_mu4dgnp2_w9fi": 2
+          },
+          "score": 2,
+          "total": 3,
+          "percentage": 67,
+          "submittedAt": 1789579598921
+        }
+      }
+    },
+    "quizzesHistory": [],
+    "quizSubmissions": [
+      {
+        "quizId": "ai_quiz_mu4dgnp2_7o4ok",
+        "quizTitle": "science Quiz",
+        "participantId": "student_mu4dh1w6_99tjz",
+        "studentName": "javeria",
+        "answers": {
+          "q_1_mu4dgnp2_z42h": 1,
+          "q_2_mu4dgnp2_w9fi": 2
+        },
+        "score": 2,
+        "total": 3,
+        "percentage": 67,
+        "submittedAt": 1789579598921
+      }
+    ],
+    "participantHistory": [
+      {
+        "id": "student_mu4dq2em_267tq",
+        "name": "sada",
+        "requestedAt": 1789579996078,
+        "participationStatus": "active",
+        "joinedAt": 1789580001270
+      }
+    ],
+    "feedback": [
+      {
+        "id": "feedback_mu4dr3ze_intr1",
+        "participantId": "student_mu4dq2em_267tq",
+        "studentName": "sada",
+        "anonymous": false,
+        "message": "you teaches well",
+        "createdAt": 1789580044778
+      },
+      {
+        "id": "feedback_mu4dqjjt_lxuim",
+        "participantId": "student_mu4dq2em_267tq",
+        "studentName": "Anonymous student",
+        "anonymous": true,
+        "message": "time is too short",
+        "createdAt": 1789580018297
+      }
+    ]
+  },
+  "997818": {
+    "code": "997818",
+    "hostName": "kashaf",
+    "teacherPasscode": "2345",
+    "createdAt": 1789582496285,
+    "localIp": "192.168.10.14",
+    "joinUrl": "http://192.168.10.14:5000/?code=997818",
+    "waitingRoom": [],
+    "activeParticipants": [
+      {
+        "id": "student_mu4f8dvl_8oren",
+        "sessionId": "997818",
+        "name": "aisha",
+        "requestedAt": 1789582530369,
+        "participationStatus": "waiting",
+        "joinedAt": 1789582535186
+      }
+    ],
+    "participantHistory": [
+      {
+        "id": "student_mu4f8dvl_8oren",
+        "sessionId": "997818",
+        "name": "aisha",
+        "requestedAt": 1789582530369,
+        "participationStatus": "active",
+        "joinedAt": 1789582535187
+      }
+    ],
+    "activePoll": null,
+    "pollsHistory": [],
+    "activeQuiz": null,
+    "quizzesHistory": [],
+    "quizSubmissions": [],
+    "feedback": [
+      {
+        "id": "feedback_mu4faiiy_azcdd",
+        "participantId": "student_mu4f8dvl_8oren",
+        "studentName": "aisha",
+        "anonymous": false,
+        "message": "greattttt",
+        "createdAt": 1789582629706
+      }
+    ],
+    "attendance": [
+      {
+        "participantId": "student_mu4f8dvl_8oren",
+        "studentName": "aisha",
+        "sessionId": "997818",
+        "joinTime": 1789582530369,
+        "status": "Present"
+      }
+    ],
+    "doubts": [
+      {
+        "id": "doubt_mu4f9vqb_31d61",
+        "sessionId": "997818",
+        "participantId": "student_mu4f8dvl_8oren",
+        "studentName": "aisha",
+        "message": "not solved",
+        "type": "doubt",
+        "status": "resolved",
+        "createdAt": 1789582600163,
+        "resolvedAt": 1789582610198
+      },
+      {
+        "id": "doubt_mu4f96sj_ulkbx",
+        "sessionId": "997818",
+        "participantId": "student_mu4f8dvl_8oren",
+        "studentName": "aisha",
+        "message": "i have an issue regarding...",
+        "type": "doubt",
+        "status": "resolved",
+        "createdAt": 1789582567843,
+        "resolvedAt": 1789582572839
+      },
+      {
+        "id": "doubt_mu4f8rl0_5idtk",
+        "sessionId": "997818",
+        "participantId": "student_mu4f8dvl_8oren",
+        "studentName": "aisha",
+        "message": "Student raised a hand.",
+        "type": "hand",
+        "status": "open",
+        "createdAt": 1789582548132
+      }
+    ]
+  }
+}

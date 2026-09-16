@@ -1179,6 +1179,54 @@ const exportSessionReport = async (req, res, next) => {
 // 19. Session History & Archives with Historical Analytics
 const getSessionHistory = async (req, res, next) => {
   try {
+    if (db.isLive()) {
+      const [rows] = await db.query(`
+        SELECT
+          s.*,
+          COUNT(DISTINCT p.id) AS total_participants,
+          COUNT(DISTINCT polls.id) AS total_polls,
+          COUNT(DISTINCT questions.id) AS total_questions,
+          insights.id AS insight_id,
+          insights.summary AS insight_summary,
+          insights.engagement_score AS insight_engagement_score,
+          insights.accuracy_rate AS insight_accuracy_rate,
+          insights.key_themes AS insight_key_themes,
+          insights.actionable_insights AS insight_actionable_insights,
+          insights.generated_at AS insight_generated_at
+        FROM sessions s
+        LEFT JOIN participants p ON p.session_id = s.id
+        LEFT JOIN polls ON polls.session_id = s.id
+        LEFT JOIN qa_questions questions ON questions.session_id = s.id
+        LEFT JOIN session_insights insights ON insights.session_id = s.id
+        WHERE s.status = 'completed' OR s.ended_at IS NOT NULL
+        GROUP BY s.id, insights.id
+        ORDER BY COALESCE(s.ended_at, s.created_at) DESC
+      `);
+
+      const historyWithAnalytics = rows.map((session) => {
+        const hasInsights = session.insight_id !== null;
+        const insights = hasInsights
+          ? {
+              session_id: session.id,
+              summary: session.insight_summary,
+              engagement_score: session.insight_engagement_score,
+              accuracy_rate: session.insight_accuracy_rate,
+              key_themes: session.insight_key_themes,
+              actionable_insights: session.insight_actionable_insights,
+              generated_at: session.insight_generated_at,
+            }
+          : null;
+
+        return {
+          ...session,
+          engagement_score: insights ? insights.engagement_score : 85,
+          insights,
+        };
+      });
+
+      return res.json({ success: true, data: historyWithAnalytics });
+    }
+
     const store = db.getFallbackStore();
     const completedSessions = store.sessions.filter((s) => s.status === 'completed' || s.ended_at);
 
