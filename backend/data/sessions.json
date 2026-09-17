@@ -1,4 +1,213 @@
 {
+  "246455": {
+    "code": "246455",
+    "hostName": "kashaf",
+    "teacherPasscode": "2345",
+    "createdAt": 1789674198647,
+    "localIp": "192.168.10.11",
+    "joinUrl": "http://192.168.10.11:5000/?code=246455",
+    "waitingRoom": [
+      {
+        "id": "student_mu5y7zeb_sgmw9",
+        "sessionId": "246455",
+        "name": "kashaf",
+        "requestedAt": 1789674890483,
+        "participationStatus": "waiting"
+      }
+    ],
+    "activeParticipants": [
+      {
+        "id": "student_mu5y030t_1qmke",
+        "sessionId": "246455",
+        "name": "javeria",
+        "requestedAt": 1789674521933,
+        "participationStatus": "waiting",
+        "joinedAt": 1789674527480
+      }
+    ],
+    "participantHistory": [
+      {
+        "id": "student_mu5y030t_1qmke",
+        "sessionId": "246455",
+        "name": "javeria",
+        "requestedAt": 1789674521933,
+        "participationStatus": "active",
+        "joinedAt": 1789674527480
+      },
+      {
+        "id": "student_mu5y7zeb_sgmw9",
+        "sessionId": "246455",
+        "name": "kashaf",
+        "requestedAt": 1789674890483,
+        "participationStatus": "waiting"
+      }
+    ],
+    "activePoll": {
+      "id": "poll_mu5xyo6j_ggq8k",
+      "sessionId": "246455",
+      "question": "What is the hardest part of studying?",
+      "options": [
+        {
+          "id": "opt_1",
+          "text": "Staying focused"
+        },
+        {
+          "id": "opt_2",
+          "text": "Remembering things"
+        },
+        {
+          "id": "opt_3",
+          "text": "Managing time"
+        }
+      ],
+      "isActive": true,
+      "createdAt": 1789674456043,
+      "votes": {
+        "student_mu5y030t_1qmke": {
+          "optionId": "opt_1",
+          "studentName": "javeria",
+          "votedAt": 1789674554023
+        }
+      }
+    },
+    "pollsHistory": [],
+    "activeQuiz": {
+      "id": "ai_quiz_mu5xza7h_mhpvs",
+      "sessionId": "246455",
+      "title": "about science Quiz",
+      "topic": "about science",
+      "isAI": true,
+      "isActive": true,
+      "createdAt": 1789674484589,
+      "durationSeconds": 180,
+      "expiresAt": 1789674664589,
+      "questions": [
+        {
+          "id": "q_1_mu5xza7h_u1m3",
+          "question": "What organelle is known as the powerhouse of eukaryotic cells?",
+          "options": [
+            "Ribosome",
+            "Mitochondria",
+            "Endoplasmic Reticulum",
+            "Golgi Apparatus"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "id": "q_2_mu5xza7h_6ai7",
+          "question": "What is the chemical formula for water?",
+          "options": [
+            "CO2",
+            "NaCl",
+            "H2O",
+            "CH4"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "id": "q_3_mu5xza7h_o32x",
+          "question": "Which process do plants use to convert sunlight into chemical energy?",
+          "options": [
+            "Fermentation",
+            "Cellular Respiration",
+            "Photosynthesis",
+            "Transpiration"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "id": "q_4_mu5xza7h_rx7q",
+          "question": "Question 4: What is the foundational core principle behind about science?",
+          "options": [
+            "Core theoretical architecture and systematic implementation rules",
+            "Arbitrary execution without structural boundaries",
+            "Purely visual styling without functional significance",
+            "Legacy deprecated methodology"
+          ],
+          "correctIndex": 0
+        }
+      ],
+      "submissions": {
+        "student_mu5y030t_1qmke": {
+          "quizId": "ai_quiz_mu5xza7h_mhpvs",
+          "sessionId": "246455",
+          "quizTitle": "about science Quiz",
+          "participantId": "student_mu5y030t_1qmke",
+          "studentName": "javeria",
+          "answers": {
+            "q_1_mu5xza7h_u1m3": 1,
+            "q_2_mu5xza7h_6ai7": 2,
+            "q_3_mu5xza7h_o32x": 1,
+            "q_4_mu5xza7h_rx7q": 2
+          },
+          "score": 2,
+          "total": 4,
+          "percentage": 50,
+          "submittedAt": 1789674566674
+        }
+      },
+      "showAnswerKey": true
+    },
+    "quizzesHistory": [],
+    "quizSubmissions": [
+      {
+        "quizId": "ai_quiz_mu5xza7h_mhpvs",
+        "sessionId": "246455",
+        "quizTitle": "about science Quiz",
+        "participantId": "student_mu5y030t_1qmke",
+        "studentName": "javeria",
+        "answers": {
+          "q_1_mu5xza7h_u1m3": 1,
+          "q_2_mu5xza7h_6ai7": 2,
+          "q_3_mu5xza7h_o32x": 1,
+          "q_4_mu5xza7h_rx7q": 2
+        },
+        "score": 2,
+        "total": 4,
+        "percentage": 50,
+        "submittedAt": 1789674566674
+      }
+    ],
+    "feedback": [
+      {
+        "id": "feedback_mu5y20wc_dlpwh",
+        "participantId": "student_mu5y030t_1qmke",
+        "studentName": "Anonymous student",
+        "anonymous": true,
+        "message": "need improvement",
+        "createdAt": 1789674612492
+      }
+    ],
+    "attendance": [
+      {
+        "participantId": "student_mu5y030t_1qmke",
+        "studentName": "javeria",
+        "sessionId": "246455",
+        "joinTime": 1789674521933,
+        "status": "Late"
+      },
+      {
+        "participantId": "student_mu5y7zeb_sgmw9",
+        "studentName": "kashaf",
+        "sessionId": "246455",
+        "joinTime": 1789674890483,
+        "status": "Late"
+      }
+    ],
+    "doubts": [
+      {
+        "id": "doubt_mu5y1944_5kqjr",
+        "sessionId": "246455",
+        "participantId": "student_mu5y030t_1qmke",
+        "studentName": "javeria",
+        "message": "Student raised a hand.",
+        "type": "hand",
+        "status": "resolved",
+        "createdAt": 1789674576484,
+        "resolvedAt": 1789674651539
+      }
+    ]
+  },
   "290871": {
     "code": "290871",
     "hostName": "kashaf",
@@ -427,6 +636,51 @@
     ],
     "feedback": []
   },
+  "524190": {
+    "code": "524190",
+    "hostName": "kashaf",
+    "teacherPasscode": "2345",
+    "createdAt": 1789674925646,
+    "localIp": "192.168.10.11",
+    "joinUrl": "http://192.168.10.11:5000/?code=524190",
+    "waitingRoom": [],
+    "activeParticipants": [
+      {
+        "id": "student_mu5y92m5_h3ilo",
+        "sessionId": "524190",
+        "name": "javeria",
+        "requestedAt": 1789674941309,
+        "participationStatus": "waiting",
+        "joinedAt": 1789674959268
+      }
+    ],
+    "participantHistory": [
+      {
+        "id": "student_mu5y92m5_h3ilo",
+        "sessionId": "524190",
+        "name": "javeria",
+        "requestedAt": 1789674941309,
+        "participationStatus": "active",
+        "joinedAt": 1789674959268
+      }
+    ],
+    "activePoll": null,
+    "pollsHistory": [],
+    "activeQuiz": null,
+    "quizzesHistory": [],
+    "quizSubmissions": [],
+    "feedback": [],
+    "attendance": [
+      {
+        "participantId": "student_mu5y92m5_h3ilo",
+        "studentName": "javeria",
+        "sessionId": "524190",
+        "joinTime": 1789674941309,
+        "status": "Present"
+      }
+    ],
+    "doubts": []
+  },
   "526900": {
     "code": "526900",
     "hostName": "kashaf",
@@ -575,6 +829,371 @@
         "anonymous": true,
         "message": "besttt",
         "createdAt": 1789582315953
+      }
+    ]
+  },
+  "613849": {
+    "code": "613849",
+    "hostName": "kashaf",
+    "teacherPasscode": "2345",
+    "createdAt": 1789665046803,
+    "localIp": "192.168.10.11",
+    "joinUrl": "http://192.168.10.11:5000/?code=613849",
+    "waitingRoom": [],
+    "activeParticipants": [
+      {
+        "id": "student_mu5se3ek_pxgg6",
+        "sessionId": "613849",
+        "name": "sadia",
+        "requestedAt": 1789665097916,
+        "participationStatus": "waiting",
+        "joinedAt": 1789665106292
+      }
+    ],
+    "participantHistory": [
+      {
+        "id": "student_mu5se3ek_pxgg6",
+        "sessionId": "613849",
+        "name": "sadia",
+        "requestedAt": 1789665097916,
+        "participationStatus": "active",
+        "joinedAt": 1789665106292
+      }
+    ],
+    "activePoll": {
+      "id": "poll_mu5sg4x4_e621t",
+      "sessionId": "613849",
+      "question": "How do you usually prepare for an online session?",
+      "options": [
+        {
+          "id": "opt_1",
+          "text": "Watch previous recordings Practice beforehand"
+        },
+        {
+          "id": "opt_2",
+          "text": "make notes"
+        }
+      ],
+      "isActive": true,
+      "createdAt": 1789665193192,
+      "votes": {
+        "student_mu5se3ek_pxgg6": {
+          "optionId": "opt_1",
+          "studentName": "sadia",
+          "votedAt": 1789665231702
+        }
+      }
+    },
+    "pollsHistory": [],
+    "activeQuiz": {
+      "id": "ai_quiz_mu5sgp7o_2cdmi",
+      "sessionId": "613849",
+      "title": "about science Quiz",
+      "topic": "about science",
+      "isAI": true,
+      "isActive": true,
+      "createdAt": 1789665219492,
+      "durationSeconds": 180,
+      "expiresAt": 1789665399492,
+      "questions": [
+        {
+          "id": "q_1_mu5sgp7o_9r67",
+          "question": "What organelle is known as the powerhouse of eukaryotic cells?",
+          "options": [
+            "Ribosome",
+            "Mitochondria",
+            "Endoplasmic Reticulum",
+            "Golgi Apparatus"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "id": "q_2_mu5sgp7o_cmyp",
+          "question": "What is the chemical formula for water?",
+          "options": [
+            "CO2",
+            "NaCl",
+            "H2O",
+            "CH4"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "id": "q_3_mu5sgp7o_l0pb",
+          "question": "Which process do plants use to convert sunlight into chemical energy?",
+          "options": [
+            "Fermentation",
+            "Cellular Respiration",
+            "Photosynthesis",
+            "Transpiration"
+          ],
+          "correctIndex": 2
+        }
+      ],
+      "submissions": {
+        "student_mu5se3ek_pxgg6": {
+          "quizId": "ai_quiz_mu5sgp7o_2cdmi",
+          "sessionId": "613849",
+          "quizTitle": "about science Quiz",
+          "participantId": "student_mu5se3ek_pxgg6",
+          "studentName": "sadia",
+          "answers": {
+            "q_1_mu5sgp7o_9r67": 0,
+            "q_2_mu5sgp7o_cmyp": 1,
+            "q_3_mu5sgp7o_l0pb": 1
+          },
+          "score": 0,
+          "total": 3,
+          "percentage": 0,
+          "submittedAt": 1789665245001
+        }
+      },
+      "showAnswerKey": true
+    },
+    "quizzesHistory": [],
+    "quizSubmissions": [
+      {
+        "quizId": "ai_quiz_mu5sgp7o_2cdmi",
+        "sessionId": "613849",
+        "quizTitle": "about science Quiz",
+        "participantId": "student_mu5se3ek_pxgg6",
+        "studentName": "sadia",
+        "answers": {
+          "q_1_mu5sgp7o_9r67": 0,
+          "q_2_mu5sgp7o_cmyp": 1,
+          "q_3_mu5sgp7o_l0pb": 1
+        },
+        "score": 0,
+        "total": 3,
+        "percentage": 0,
+        "submittedAt": 1789665245001
+      }
+    ],
+    "feedback": [
+      {
+        "id": "feedback_mu5sk521_l77wd",
+        "participantId": "student_mu5se3ek_pxgg6",
+        "studentName": "Anonymous student",
+        "anonymous": true,
+        "message": "Not taught well",
+        "createdAt": 1789665379993
+      }
+    ],
+    "attendance": [
+      {
+        "participantId": "student_mu5se3ek_pxgg6",
+        "studentName": "sadia",
+        "sessionId": "613849",
+        "joinTime": 1789665097916,
+        "status": "Present"
+      }
+    ],
+    "doubts": [
+      {
+        "id": "doubt_mu5shkmn_cd9ot",
+        "sessionId": "613849",
+        "participantId": "student_mu5se3ek_pxgg6",
+        "studentName": "sadia",
+        "message": "Student raised a hand.",
+        "type": "hand",
+        "status": "resolved",
+        "createdAt": 1789665260207,
+        "resolvedAt": 1789665430608
+      }
+    ]
+  },
+  "702607": {
+    "code": "702607",
+    "hostName": "kashaf",
+    "teacherPasscode": "2345",
+    "createdAt": 1789686066621,
+    "localIp": "192.168.10.11",
+    "joinUrl": "http://192.168.10.11:5000/?code=702607",
+    "waitingRoom": [],
+    "activeParticipants": [
+      {
+        "id": "student_mu64wlag_caxc5",
+        "sessionId": "702607",
+        "name": "sadia",
+        "requestedAt": 1789686116296,
+        "participationStatus": "waiting",
+        "joinedAt": 1789686138253
+      }
+    ],
+    "participantHistory": [
+      {
+        "id": "student_mu64wlag_caxc5",
+        "sessionId": "702607",
+        "name": "sadia",
+        "requestedAt": 1789686116296,
+        "participationStatus": "active",
+        "joinedAt": 1789686138253
+      }
+    ],
+    "activePoll": {
+      "id": "poll_mu64y3i1_1tw7i",
+      "sessionId": "702607",
+      "question": "which session do you want to revise",
+      "options": [
+        {
+          "id": "opt_1",
+          "text": "phy"
+        },
+        {
+          "id": "opt_2",
+          "text": "chemi"
+        }
+      ],
+      "isActive": true,
+      "createdAt": 1789686186553,
+      "votes": {
+        "student_mu64wlag_caxc5": {
+          "optionId": "opt_1",
+          "studentName": "sadia",
+          "votedAt": 1789686245854
+        }
+      }
+    },
+    "pollsHistory": [],
+    "activeQuiz": {
+      "id": "ai_quiz_mu64yz5k_r5xnu",
+      "sessionId": "702607",
+      "title": "about chemistry Quiz",
+      "topic": "about chemistry",
+      "isAI": true,
+      "isActive": true,
+      "createdAt": 1789686227576,
+      "durationSeconds": 180,
+      "expiresAt": 1789686407576,
+      "questions": [
+        {
+          "id": "q_1_mu64yz5k_i6s0",
+          "question": "Question 1: What is the foundational core principle behind about chemistry?",
+          "options": [
+            "Core theoretical architecture and systematic implementation rules",
+            "Arbitrary execution without structural boundaries",
+            "Purely visual styling without functional significance",
+            "Legacy deprecated methodology"
+          ],
+          "correctIndex": 0
+        },
+        {
+          "id": "q_2_mu64yz5k_2aq3",
+          "question": "Question 2: Which practice is essential when implementing about chemistry?",
+          "options": [
+            "Skipping validation and error logging",
+            "Continuous verification, clean modular design, and robust testing",
+            "Manual repetitive tasks without automation",
+            "Hardcoding static references across all layers"
+          ],
+          "correctIndex": 1
+        },
+        {
+          "id": "q_3_mu64yz5k_6w6h",
+          "question": "Question 3: What is the primary operational advantage of mastering about chemistry?",
+          "options": [
+            "Increased latency and redundant processing cycles",
+            "Fragile execution flow prone to silent crashes",
+            "High efficiency, systematic scalability, and predictable outcomes",
+            "Uncontrolled resource consumption"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "id": "q_4_mu64yz5k_18xu",
+          "question": "Question 4: In about chemistry, how are edge cases and unexpected inputs best managed?",
+          "options": [
+            "Ignoring invalid inputs and continuing execution",
+            "Crashing the system without reporting diagnostic data",
+            "Defensive validation, explicit exception handling, and structured recovery",
+            "Disabling all boundary limits"
+          ],
+          "correctIndex": 2
+        },
+        {
+          "id": "q_5_mu64yz5k_2mo3",
+          "question": "Question 5: What is the foundational core principle behind about chemistry?",
+          "options": [
+            "Core theoretical architecture and systematic implementation rules",
+            "Arbitrary execution without structural boundaries",
+            "Purely visual styling without functional significance",
+            "Legacy deprecated methodology"
+          ],
+          "correctIndex": 0
+        }
+      ],
+      "submissions": {
+        "student_mu64wlag_caxc5": {
+          "quizId": "ai_quiz_mu64yz5k_r5xnu",
+          "sessionId": "702607",
+          "quizTitle": "about chemistry Quiz",
+          "participantId": "student_mu64wlag_caxc5",
+          "studentName": "sadia",
+          "answers": {
+            "q_1_mu64yz5k_i6s0": 1,
+            "q_2_mu64yz5k_2aq3": 2,
+            "q_3_mu64yz5k_6w6h": 1,
+            "q_4_mu64yz5k_18xu": 2,
+            "q_5_mu64yz5k_2mo3": 1
+          },
+          "score": 1,
+          "total": 5,
+          "percentage": 20,
+          "submittedAt": 1789686262335
+        }
+      },
+      "showAnswerKey": true
+    },
+    "quizzesHistory": [],
+    "quizSubmissions": [
+      {
+        "quizId": "ai_quiz_mu64yz5k_r5xnu",
+        "sessionId": "702607",
+        "quizTitle": "about chemistry Quiz",
+        "participantId": "student_mu64wlag_caxc5",
+        "studentName": "sadia",
+        "answers": {
+          "q_1_mu64yz5k_i6s0": 1,
+          "q_2_mu64yz5k_2aq3": 2,
+          "q_3_mu64yz5k_6w6h": 1,
+          "q_4_mu64yz5k_18xu": 2,
+          "q_5_mu64yz5k_2mo3": 1
+        },
+        "score": 1,
+        "total": 5,
+        "percentage": 20,
+        "submittedAt": 1789686262335
+      }
+    ],
+    "feedback": [
+      {
+        "id": "feedback_mu650omz_45ah5",
+        "participantId": "student_mu64wlag_caxc5",
+        "studentName": "Anonymous student",
+        "anonymous": true,
+        "message": "need improvement",
+        "createdAt": 1789686307259
+      }
+    ],
+    "attendance": [
+      {
+        "participantId": "student_mu64wlag_caxc5",
+        "studentName": "sadia",
+        "sessionId": "702607",
+        "joinTime": 1789686116296,
+        "status": "Present"
+      }
+    ],
+    "doubts": [
+      {
+        "id": "doubt_mu65029e_9pr7y",
+        "sessionId": "702607",
+        "participantId": "student_mu64wlag_caxc5",
+        "studentName": "sadia",
+        "message": "Student raised a hand.",
+        "type": "hand",
+        "status": "open",
+        "createdAt": 1789686278258
       }
     ]
   },
@@ -728,6 +1347,25 @@
         "createdAt": 1789581196967
       }
     ]
+  },
+  "760960": {
+    "code": "760960",
+    "hostName": "kashaf",
+    "teacherPasscode": "2345",
+    "createdAt": 1789664109317,
+    "localIp": "192.168.10.11",
+    "joinUrl": "http://192.168.10.11:5000/?code=760960",
+    "waitingRoom": [],
+    "activeParticipants": [],
+    "participantHistory": [],
+    "activePoll": null,
+    "pollsHistory": [],
+    "activeQuiz": null,
+    "quizzesHistory": [],
+    "quizSubmissions": [],
+    "feedback": [],
+    "attendance": [],
+    "doubts": []
   },
   "802747": {
     "code": "802747",
@@ -1133,13 +1771,32 @@
       }
     ]
   },
+  "866852": {
+    "code": "866852",
+    "hostName": "kashaf",
+    "teacherPasscode": "2345",
+    "createdAt": 1789663372531,
+    "localIp": "192.168.10.11",
+    "joinUrl": "http://192.168.10.11:5000/?code=866852",
+    "waitingRoom": [],
+    "activeParticipants": [],
+    "participantHistory": [],
+    "activePoll": null,
+    "pollsHistory": [],
+    "activeQuiz": null,
+    "quizzesHistory": [],
+    "quizSubmissions": [],
+    "feedback": [],
+    "attendance": [],
+    "doubts": []
+  },
   "997818": {
     "code": "997818",
     "hostName": "kashaf",
     "teacherPasscode": "2345",
     "createdAt": 1789582496285,
-    "localIp": "192.168.10.14",
-    "joinUrl": "http://192.168.10.14:5000/?code=997818",
+    "localIp": "192.168.10.11",
+    "joinUrl": "http://192.168.10.11:5000/?code=997818",
     "waitingRoom": [],
     "activeParticipants": [
       {

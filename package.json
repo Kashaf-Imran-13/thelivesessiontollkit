@@ -8,10 +8,12 @@
     "dev:frontend": "cd frontend && npm run dev",
     "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"blue,magenta\" \"npm run dev:backend\" \"npm run dev:frontend\"",
     "build": "cd frontend && npm run build",
+    "postinstall": "npx prisma generate && npx prisma db push",
     "start": "npm run dev:backend"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "prisma": "^5.22.0"
   },
   "keywords": ["react", "express", "mysql", "fullstack", "architecture"],
   "author": "Antigravity Pair",
